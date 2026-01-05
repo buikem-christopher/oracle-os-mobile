@@ -2,26 +2,47 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { useState } from "react";
+import { OracleProvider } from "@/contexts/OracleContext";
+import { BottomNav } from "@/components/BottomNav";
+import { HomePage } from "@/pages/HomePage";
+import { EnvironmentsPage } from "@/pages/EnvironmentsPage";
+import { SignalsPage } from "@/pages/SignalsPage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { SettingsPage } from "@/pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+
+  const renderPage = () => {
+    switch (activeTab) {
+      case 'home': return <HomePage />;
+      case 'environments': return <EnvironmentsPage />;
+      case 'signals': return <SignalsPage />;
+      case 'profile': return <ProfilePage />;
+      case 'settings': return <SettingsPage />;
+      default: return <HomePage />;
+    }
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <OracleProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <div className="min-h-screen bg-background">
+            <main className="px-4 pb-24 max-w-lg mx-auto">
+              {renderPage()}
+            </main>
+            <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+        </TooltipProvider>
+      </OracleProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
