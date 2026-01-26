@@ -47,6 +47,24 @@ export interface InvestorContract {
   createdAt: Date;
 }
 
+export interface ActivityItem {
+  id: string;
+  type: 'spawn' | 'kill' | 'trade' | 'profit' | 'loss' | 'deposit' | 'withdraw';
+  message: string;
+  timestamp: Date;
+  agentName?: string;
+  amount?: number;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  unlockedAt?: Date;
+}
+
 interface OracleContextType {
   // Demo Mode
   demoMode: boolean;
@@ -77,6 +95,15 @@ interface OracleContextType {
     totalPnLPercent: number;
     activeAgents: number;
   };
+  depositCapital: (amount: number) => void;
+  withdrawCapital: (amount: number) => void;
+  portfolioHistory: number[];
+  
+  // Activity Feed
+  activityFeed: ActivityItem[];
+  
+  // Achievements
+  achievements: Achievement[];
   
   // Contracts
   contracts: InvestorContract[];
@@ -156,12 +183,22 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [portfolio, setPortfolio] = useState({
-    totalCapital: 250000,
-    availableCapital: 185000,
-    totalPnL: 12450,
-    totalPnLPercent: 4.98,
+    totalCapital: 1000,
+    availableCapital: 850,
+    totalPnL: 45,
+    totalPnLPercent: 4.5,
     activeAgents: 0,
   });
+
+  const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([
+    { id: '1', name: 'First Steps', description: 'Spawn your first agent', icon: 'rocket', unlocked: false },
+    { id: '2', name: 'Profitable', description: 'Earn $100 in profit', icon: 'trending-up', unlocked: false },
+    { id: '3', name: 'Multi-Agent', description: 'Run 3 agents simultaneously', icon: 'bot', unlocked: false },
+    { id: '4', name: 'Risk Manager', description: 'Kill an underperforming agent', icon: 'shield', unlocked: false },
+    { id: '5', name: 'Whale', description: 'Reach $10,000 portfolio value', icon: 'star', unlocked: false },
+  ]);
+  const [portfolioHistory, setPortfolioHistory] = useState<number[]>([1000]);
 
   const [foresight, setForesight] = useState<XHRForesight>({
     bias: 'bullish',
@@ -236,6 +273,68 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => clearInterval(interval);
   }, [demoMode]);
 
+  // Activity Feed helper
+  const addActivity = useCallback((type: ActivityItem['type'], message: string, agentName?: string, amount?: number) => {
+    const newActivity: ActivityItem = {
+      id: generateId(),
+      type,
+      message,
+      timestamp: new Date(),
+      agentName,
+      amount,
+    };
+    setActivityFeed(prev => [newActivity, ...prev].slice(0, 50));
+  }, []);
+
+  // Achievement unlock helper
+  const unlockAchievement = useCallback((achievementId: string) => {
+    setAchievements(prev => prev.map(a => 
+      a.id === achievementId && !a.unlocked 
+        ? { ...a, unlocked: true, unlockedAt: new Date() } 
+        : a
+    ));
+  }, []);
+
+  // Check achievements
+  useEffect(() => {
+    const activeCount = agents.filter(a => a.state === 'active' || a.state === 'spawning').length;
+    if (activeCount >= 1) unlockAchievement('1'); // First Steps
+    if (activeCount >= 3) unlockAchievement('3'); // Multi-Agent
+    if (portfolio.totalPnL >= 100) unlockAchievement('2'); // Profitable
+    if (portfolio.totalCapital >= 10000) unlockAchievement('5'); // Whale
+  }, [agents, portfolio, unlockAchievement]);
+
+  // Update portfolio history
+  useEffect(() => {
+    if (!demoMode) return;
+    const interval = setInterval(() => {
+      setPortfolioHistory(prev => [...prev.slice(-29), portfolio.totalCapital]);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [demoMode, portfolio.totalCapital]);
+
+  // Deposit capital
+  const depositCapital = useCallback((amount: number) => {
+    if (amount <= 0) return;
+    setPortfolio(prev => ({
+      ...prev,
+      totalCapital: prev.totalCapital + amount,
+      availableCapital: prev.availableCapital + amount,
+    }));
+    addActivity('deposit', `Deposited $${amount.toLocaleString()}`, undefined, amount);
+  }, [addActivity]);
+
+  // Withdraw capital
+  const withdrawCapital = useCallback((amount: number) => {
+    if (amount <= 0 || amount > portfolio.availableCapital) return;
+    setPortfolio(prev => ({
+      ...prev,
+      totalCapital: prev.totalCapital - amount,
+      availableCapital: prev.availableCapital - amount,
+    }));
+    addActivity('withdraw', `Withdrew $${amount.toLocaleString()}`, undefined, amount);
+  }, [portfolio.availableCapital, addActivity]);
+
   const spawnAgent = useCallback((market: string, model: OracleModel) => {
     const usedNames = agents.map(a => a.name);
     const availableNames = AGENT_NAMES.filter(n => !usedNames.includes(n));
@@ -267,20 +366,22 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       activeAgents: prev.activeAgents + 1,
     }));
     
+    addActivity('spawn', `${name} spawned on ${market}`, name, capital);
+    
     // Transition to active after spawn animation
     setTimeout(() => {
       setAgents(prev => prev.map(a => 
         a.id === newAgent.id ? { ...a, state: 'active' } : a
       ));
     }, 1500);
-  }, [agents, portfolio.availableCapital, settings.maxBalancePerAgent]);
+  }, [agents, portfolio.availableCapital, settings.maxBalancePerAgent, addActivity]);
 
   const killAgent = useCallback((id: string) => {
+    const agent = agents.find(a => a.id === id);
     setAgents(prev => prev.map(a => 
       a.id === id ? { ...a, state: 'killed' } : a
     ));
     
-    const agent = agents.find(a => a.id === id);
     if (agent) {
       setPortfolio(prev => ({
         ...prev,
@@ -288,8 +389,10 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         totalPnL: prev.totalPnL + agent.pnl,
         activeAgents: Math.max(0, prev.activeAgents - 1),
       }));
+      addActivity('kill', `${agent.name} terminated with ${agent.pnl >= 0 ? '+' : ''}$${agent.pnl.toFixed(2)} P&L`, agent.name, agent.pnl);
+      unlockAchievement('4'); // Risk Manager
     }
-  }, [agents]);
+  }, [agents, addActivity, unlockAchievement]);
 
   const pauseAgent = useCallback((id: string) => {
     setAgents(prev => prev.map(a => 
@@ -354,6 +457,11 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       showForesight,
       setShowForesight,
       portfolio,
+      depositCapital,
+      withdrawCapital,
+      portfolioHistory,
+      activityFeed,
+      achievements,
       contracts,
       approveContract,
       rejectContract,
