@@ -1,5 +1,9 @@
 import React from 'react';
 import { PortfolioCard } from '@/components/PortfolioCard';
+import { QuickSpawnAgent } from '@/components/QuickSpawnAgent';
+import { ActivityFeed } from '@/components/ActivityFeed';
+import { AchievementBadges } from '@/components/AchievementBadges';
+import { CapitalManager } from '@/components/CapitalManager';
 import { useOracle } from '@/contexts/OracleContext';
 import { BookOpen, Zap, Shield, Brain, ChevronRight } from 'lucide-react';
 
@@ -7,13 +11,25 @@ export const HomePage: React.FC = () => {
   const { agents } = useOracle();
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in pb-4">
       <header className="pt-2">
         <h1 className="text-2xl font-bold text-gradient-oracle">Oracle OS</h1>
         <p className="text-sm text-muted-foreground">Multi-Agent Trading Intelligence</p>
       </header>
 
       <PortfolioCard />
+      
+      {/* Capital Management */}
+      <CapitalManager />
+      
+      {/* Quick Spawn */}
+      <QuickSpawnAgent />
+
+      {/* Achievements */}
+      <AchievementBadges />
+
+      {/* Activity Feed */}
+      <ActivityFeed />
 
       {/* Oracle Models */}
       <section>

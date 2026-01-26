@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Wallet, Bot, DollarSign, Activity } from 'lucide-react';
 import { useOracle } from '@/contexts/OracleContext';
+import { PortfolioSparkline } from './PortfolioSparkline';
 
 export const PortfolioCard: React.FC = () => {
   const { portfolio, agents, demoMode } = useOracle();
@@ -23,11 +24,14 @@ export const PortfolioCard: React.FC = () => {
           </div>
         )}
 
-        {/* Total Capital */}
+        {/* Total Capital with Sparkline */}
         <div className="mb-5">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <Wallet className="w-4 h-4" />
-            Total Portfolio Value
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Wallet className="w-4 h-4" />
+              Total Portfolio Value
+            </div>
+            <PortfolioSparkline />
           </div>
           <div className="flex items-baseline gap-3">
             <span className="font-mono text-3xl font-bold text-foreground">
