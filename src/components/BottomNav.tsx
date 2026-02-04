@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Home, BarChart3, Radio, User, Settings } from 'lucide-react';
 
 interface BottomNavProps {
@@ -17,14 +16,8 @@ const tabs = [
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Gradient blur background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent backdrop-blur-xl" />
-      
-      {/* Top border glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      
-      <div className="relative flex items-center justify-around px-2 py-2 pb-6">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50">
+      <div className="flex items-center justify-around px-1 py-1.5 pb-5 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -33,42 +26,25 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="relative flex flex-col items-center justify-center w-16 h-14 transition-all duration-300"
+              className={`relative flex flex-col items-center justify-center w-14 h-12 rounded-lg transition-all duration-200 ${
+                isActive ? 'bg-primary/10' : 'hover:bg-muted/50'
+              }`}
             >
-              {/* Active indicator background */}
-              {isActive && (
-                <div className="absolute inset-1 rounded-xl bg-primary/10 transition-all duration-300" />
-              )}
-              
-              {/* Glow effect for active tab */}
-              {isActive && (
-                <div
-                  className="absolute inset-0 rounded-xl transition-opacity duration-300"
-                  style={{
-                    background: 'radial-gradient(ellipse at center, hsl(185 100% 60% / 0.15), transparent 70%)',
-                  }}
-                />
-              )}
-              
-              <div
-                className={`relative z-10 transition-transform duration-300 ${isActive ? 'scale-110 -translate-y-0.5' : ''}`}
-              >
-                <Icon 
-                  className={`w-5 h-5 transition-colors duration-300 ${
-                    isActive 
-                      ? 'text-primary drop-shadow-[0_0_8px_hsl(185_100%_60%/0.6)]' 
-                      : 'text-muted-foreground'
-                  }`}
-                />
-              </div>
-              
+              <Icon 
+                className={`w-5 h-5 transition-colors duration-200 ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              />
               <span
-                className={`relative z-10 mt-1 text-[10px] font-medium transition-all duration-300 ${
-                  isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-60'
+                className={`mt-0.5 text-[10px] font-medium transition-colors duration-200 ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 {tab.label}
               </span>
+              {isActive && (
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+              )}
             </button>
           );
         })}

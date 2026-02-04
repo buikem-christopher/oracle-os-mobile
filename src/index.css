@@ -12,77 +12,142 @@
 
 @layer base {
   :root {
-    /* Oracle OS Dark Theme - Cyberpunk Aesthetic */
-    --background: 222 47% 5%;
-    --foreground: 210 40% 98%;
+    /* Oracle OS Professional Dark Theme */
+    --background: 230 15% 6%;
+    --foreground: 0 0% 95%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 230 15% 9%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 222 47% 7%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 230 15% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Cyan/Teal Primary - Oracle Brand */
-    --primary: 185 85% 50%;
-    --primary-foreground: 222 47% 5%;
+    /* Refined Cyan/Teal Primary */
+    --primary: 175 70% 42%;
+    --primary-foreground: 230 15% 6%;
 
-    --secondary: 222 30% 15%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 230 12% 14%;
+    --secondary-foreground: 0 0% 85%;
 
-    --muted: 222 30% 12%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 230 10% 12%;
+    --muted-foreground: 230 8% 50%;
 
-    --accent: 185 70% 40%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 175 50% 35%;
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 15%;
-    --ring: 185 85% 50%;
+    --border: 230 12% 16%;
+    --input: 230 12% 12%;
+    --ring: 175 70% 42%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Oracle Custom Colors */
-    --oracle-cyan: 185 85% 50%;
-    --oracle-cyan-glow: 185 100% 60%;
-    --oracle-green: 145 70% 45%;
-    --oracle-green-glow: 145 80% 55%;
-    --oracle-red: 0 70% 50%;
-    --oracle-red-glow: 0 80% 60%;
-    --oracle-orange: 30 90% 50%;
-    --oracle-orange-glow: 30 100% 60%;
-    --oracle-purple: 270 70% 55%;
-    --oracle-purple-glow: 270 80% 65%;
-    --oracle-gold: 45 90% 55%;
+    /* Oracle Professional Colors */
+    --oracle-cyan: 175 70% 42%;
+    --oracle-cyan-glow: 175 80% 55%;
+    --oracle-green: 152 60% 42%;
+    --oracle-green-glow: 152 70% 52%;
+    --oracle-red: 0 55% 48%;
+    --oracle-red-glow: 0 65% 55%;
+    --oracle-orange: 28 75% 50%;
+    --oracle-orange-glow: 28 85% 58%;
+    --oracle-purple: 265 55% 52%;
+    --oracle-purple-glow: 265 65% 62%;
+    --oracle-gold: 42 85% 52%;
+    --oracle-blue: 210 70% 50%;
 
-    /* Glass Effects */
-    --glass-bg: 222 47% 8% / 0.7;
-    --glass-border: 185 50% 50% / 0.15;
-    --glass-blur: 20px;
+    /* Glass Effects - More subtle */
+    --glass-bg: 230 15% 9% / 0.85;
+    --glass-border: 175 40% 40% / 0.08;
+    --glass-blur: 16px;
 
-    /* Gradients */
-    --gradient-oracle: linear-gradient(135deg, hsl(185 85% 50%), hsl(200 80% 45%));
-    --gradient-card: linear-gradient(180deg, hsl(222 47% 10%), hsl(222 47% 6%));
-    --gradient-glow-cyan: radial-gradient(ellipse at center, hsl(185 100% 60% / 0.3), transparent 70%);
-    --gradient-glow-green: radial-gradient(ellipse at center, hsl(145 80% 55% / 0.3), transparent 70%);
-    --gradient-glow-red: radial-gradient(ellipse at center, hsl(0 80% 60% / 0.3), transparent 70%);
-    --gradient-glow-orange: radial-gradient(ellipse at center, hsl(30 100% 60% / 0.3), transparent 70%);
+    /* Professional Gradients */
+    --gradient-oracle: linear-gradient(135deg, hsl(175 70% 42%), hsl(190 65% 38%));
+    --gradient-card: linear-gradient(180deg, hsl(230 15% 11%), hsl(230 15% 7%));
+    --gradient-surface: linear-gradient(180deg, hsl(230 15% 10% / 0.9), hsl(230 15% 6% / 0.95));
 
     /* Fonts */
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Sidebar - keeping for compatibility */
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 185 85% 50%;
-    --sidebar-primary-foreground: 222 47% 5%;
-    --sidebar-accent: 222 30% 15%;
-    --sidebar-accent-foreground: 210 40% 90%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 185 85% 50%;
+    /* Sidebar */
+    --sidebar-background: 230 15% 7%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 175 70% 42%;
+    --sidebar-primary-foreground: 230 15% 6%;
+    --sidebar-accent: 230 12% 14%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 230 12% 16%;
+    --sidebar-ring: 175 70% 42%;
+
+    /* Chart colors */
+    --chart-1: 175 70% 42%;
+    --chart-2: 152 60% 42%;
+    --chart-3: 265 55% 52%;
+    --chart-4: 42 85% 52%;
+    --chart-5: 0 55% 48%;
+  }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 230 15% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 15% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 15% 10%;
+
+    --primary: 175 70% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 230 8% 92%;
+    --secondary-foreground: 230 15% 20%;
+
+    --muted: 230 8% 95%;
+    --muted-foreground: 230 10% 45%;
+
+    --accent: 175 50% 92%;
+    --accent-foreground: 175 70% 25%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 8% 88%;
+    --input: 230 8% 92%;
+    --ring: 175 70% 35%;
+
+    --oracle-cyan: 175 70% 35%;
+    --oracle-cyan-glow: 175 80% 45%;
+    --oracle-green: 152 60% 35%;
+    --oracle-green-glow: 152 70% 45%;
+    --oracle-red: 0 55% 48%;
+    --oracle-red-glow: 0 65% 55%;
+    --oracle-orange: 28 75% 45%;
+    --oracle-orange-glow: 28 85% 52%;
+    --oracle-purple: 265 55% 48%;
+    --oracle-purple-glow: 265 65% 58%;
+    --oracle-gold: 42 85% 45%;
+    --oracle-blue: 210 70% 45%;
+
+    --glass-bg: 0 0% 100% / 0.9;
+    --glass-border: 230 8% 85% / 0.5;
+    --glass-blur: 12px;
+
+    --gradient-oracle: linear-gradient(135deg, hsl(175 70% 35%), hsl(190 65% 32%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(230 8% 97%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 99% / 0.95), hsl(230 8% 97% / 0.98));
+
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 230 15% 20%;
+    --sidebar-primary: 175 70% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 8% 95%;
+    --sidebar-accent-foreground: 230 15% 20%;
+    --sidebar-border: 230 8% 88%;
+    --sidebar-ring: 175 70% 35%;
   }
 }
 
@@ -97,11 +162,13 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    background-image: 
-      radial-gradient(ellipse at 50% 0%, hsl(185 50% 15% / 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 0% 100%, hsl(270 50% 15% / 0.1) 0%, transparent 40%),
-      radial-gradient(ellipse at 100% 100%, hsl(185 50% 15% / 0.08) 0%, transparent 40%);
     min-height: 100vh;
+  }
+
+  .dark body {
+    background-image: 
+      radial-gradient(ellipse at 20% 0%, hsl(175 40% 12% / 0.08) 0%, transparent 45%),
+      radial-gradient(ellipse at 80% 100%, hsl(265 40% 12% / 0.05) 0%, transparent 40%);
   }
 
   .font-mono {
@@ -110,149 +177,203 @@
 }
 
 @layer components {
-  /* Glass Card Effect */
+  /* Professional Glass Card */
   .glass-card {
-    @apply relative overflow-hidden rounded-xl;
-    background: linear-gradient(180deg, hsl(222 47% 10% / 0.8), hsl(222 47% 6% / 0.9));
-    border: 1px solid hsl(185 50% 50% / 0.1);
+    @apply relative overflow-hidden rounded-lg border border-border/50;
+    background: var(--gradient-surface);
     backdrop-filter: blur(var(--glass-blur));
   }
 
   .glass-card::before {
     content: '';
-    @apply absolute inset-0 rounded-xl pointer-events-none;
-    background: linear-gradient(180deg, hsl(185 50% 50% / 0.05), transparent 50%);
+    @apply absolute inset-0 rounded-lg pointer-events-none;
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.02), transparent 40%);
   }
 
-  /* Agent Glow States */
+  /* Sophisticated card variant */
+  .card-elevated {
+    @apply glass-card;
+    box-shadow: 
+      0 1px 2px hsl(0 0% 0% / 0.1),
+      0 4px 12px hsl(0 0% 0% / 0.08);
+  }
+
+  .light .card-elevated {
+    box-shadow: 
+      0 1px 3px hsl(0 0% 0% / 0.08),
+      0 4px 16px hsl(0 0% 0% / 0.04);
+  }
+
+  /* Agent Glow States - More refined */
   .agent-glow-profit {
     box-shadow: 
-      0 0 20px hsl(145 80% 55% / 0.3),
-      0 0 40px hsl(145 80% 55% / 0.15),
-      inset 0 0 20px hsl(145 80% 55% / 0.05);
-    border-color: hsl(145 70% 45% / 0.5);
+      0 0 0 1px hsl(var(--oracle-green) / 0.3),
+      0 0 16px hsl(var(--oracle-green-glow) / 0.15);
+    border-color: hsl(var(--oracle-green) / 0.4);
   }
 
   .agent-glow-loss {
     box-shadow: 
-      0 0 20px hsl(0 80% 60% / 0.3),
-      0 0 40px hsl(0 80% 60% / 0.15),
-      inset 0 0 20px hsl(0 80% 60% / 0.05);
-    border-color: hsl(0 70% 50% / 0.5);
+      0 0 0 1px hsl(var(--oracle-red) / 0.3),
+      0 0 16px hsl(var(--oracle-red-glow) / 0.15);
+    border-color: hsl(var(--oracle-red) / 0.4);
   }
 
   .agent-glow-volatile {
     box-shadow: 
-      0 0 20px hsl(30 100% 60% / 0.3),
-      0 0 40px hsl(30 100% 60% / 0.15),
-      inset 0 0 20px hsl(30 100% 60% / 0.05);
-    border-color: hsl(30 90% 50% / 0.5);
+      0 0 0 1px hsl(var(--oracle-orange) / 0.3),
+      0 0 16px hsl(var(--oracle-orange-glow) / 0.12);
+    border-color: hsl(var(--oracle-orange) / 0.4);
   }
 
   .agent-glow-foresight {
     box-shadow: 
-      0 0 25px hsl(185 100% 60% / 0.4),
-      0 0 50px hsl(185 100% 60% / 0.2),
-      inset 0 0 25px hsl(185 100% 60% / 0.08);
-    border-color: hsl(185 85% 50% / 0.6);
-    animation: pulse-cyan 2s ease-in-out infinite;
+      0 0 0 1px hsl(var(--oracle-cyan) / 0.4),
+      0 0 20px hsl(var(--oracle-cyan-glow) / 0.2);
+    border-color: hsl(var(--oracle-cyan) / 0.5);
+    animation: subtle-pulse 3s ease-in-out infinite;
   }
 
   .agent-glow-killed {
-    box-shadow: 
-      0 0 15px hsl(0 60% 40% / 0.2),
-      inset 0 0 15px hsl(0 60% 40% / 0.05);
-    border-color: hsl(0 50% 35% / 0.4);
-    opacity: 0.6;
+    opacity: 0.5;
+    border-color: hsl(var(--oracle-red) / 0.3);
+  }
+
+  /* Premium Button */
+  .btn-oracle {
+    @apply relative overflow-hidden px-5 py-2.5 rounded-lg font-medium transition-all duration-200;
+    background: var(--gradient-oracle);
+    color: hsl(0 0% 100%);
+  }
+
+  .btn-oracle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px hsl(var(--primary) / 0.25);
+  }
+
+  .btn-oracle:active {
+    transform: translateY(0);
+  }
+
+  /* Badge Styles - More refined */
+  .badge-preview {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: hsl(var(--oracle-cyan) / 0.12);
+    color: hsl(var(--oracle-cyan));
+    border: 1px solid hsl(var(--oracle-cyan) / 0.2);
+  }
+
+  .badge-exp {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: hsl(var(--oracle-purple) / 0.12);
+    color: hsl(var(--oracle-purple));
+    border: 1px solid hsl(var(--oracle-purple) / 0.2);
+  }
+
+  .badge-rpm {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: linear-gradient(135deg, hsl(var(--oracle-gold) / 0.15), hsl(var(--oracle-orange) / 0.15));
+    color: hsl(var(--oracle-gold));
+    border: 1px solid hsl(var(--oracle-gold) / 0.25);
+  }
+
+  .badge-soon {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .badge-live {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: hsl(var(--oracle-green) / 0.12);
+    color: hsl(var(--oracle-green));
+    border: 1px solid hsl(var(--oracle-green) / 0.2);
+  }
+
+  .badge-demo {
+    @apply px-2 py-0.5 text-[10px] font-semibold rounded uppercase tracking-wide;
+    background: hsl(var(--oracle-orange) / 0.12);
+    color: hsl(var(--oracle-orange));
+    border: 1px solid hsl(var(--oracle-orange) / 0.2);
+  }
+
+  /* Status dot */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-dot.active {
+    @apply bg-oracle-green;
+    box-shadow: 0 0 8px hsl(var(--oracle-green-glow) / 0.6);
+  }
+
+  .status-dot.warning {
+    @apply bg-oracle-orange;
+    box-shadow: 0 0 8px hsl(var(--oracle-orange-glow) / 0.6);
+  }
+
+  .status-dot.error {
+    @apply bg-oracle-red;
+    box-shadow: 0 0 8px hsl(var(--oracle-red-glow) / 0.6);
   }
 
   /* XHR Foresight Candle */
   .xhr-candle {
     @apply relative;
-    opacity: 0.4;
-    filter: blur(0.5px);
+    opacity: 0.5;
   }
 
-  .xhr-candle::after {
-    content: '';
-    @apply absolute inset-0;
-    background: linear-gradient(90deg, transparent, hsl(185 100% 60% / 0.1));
-  }
-
-  /* Premium Button */
-  .btn-oracle {
-    @apply relative overflow-hidden px-6 py-3 rounded-lg font-medium transition-all duration-300;
-    background: var(--gradient-oracle);
-    color: hsl(222 47% 5%);
-  }
-
-  .btn-oracle::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(185 100% 70%), hsl(200 90% 60%));
-  }
-
-  .btn-oracle:hover::before {
-    @apply opacity-100;
-  }
-
-  .btn-oracle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px hsl(185 85% 50% / 0.3);
-  }
-
-  /* Badge Styles */
-  .badge-preview {
-    @apply px-2 py-0.5 text-xs font-medium rounded-full;
-    background: hsl(185 85% 50% / 0.2);
-    color: hsl(185 85% 60%);
-    border: 1px solid hsl(185 85% 50% / 0.3);
-  }
-
-  .badge-exp {
-    @apply px-2 py-0.5 text-xs font-medium rounded-full;
-    background: hsl(270 70% 55% / 0.2);
-    color: hsl(270 80% 70%);
-    border: 1px solid hsl(270 70% 55% / 0.3);
-  }
-
-  .badge-ultra {
-    @apply px-2 py-0.5 text-xs font-medium rounded-full;
-    background: linear-gradient(135deg, hsl(45 90% 55% / 0.2), hsl(30 90% 55% / 0.2));
-    color: hsl(45 90% 65%);
-    border: 1px solid hsl(45 90% 55% / 0.4);
-  }
-
-  .badge-soon {
-    @apply px-2 py-0.5 text-xs font-medium rounded-full;
-    background: hsl(222 30% 20% / 0.5);
-    color: hsl(222 20% 60%);
-    border: 1px solid hsl(222 30% 30%);
-  }
-
-  /* Chart Grid Lines */
-  .chart-grid {
-    stroke: hsl(222 30% 20%);
-    stroke-dasharray: 2 4;
-  }
-
-  /* Scrollbar */
+  /* Scrollbar - Refined */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(222 47% 8%);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(222 30% 25%);
+    background: hsl(var(--muted-foreground) / 0.2);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(185 50% 40%);
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  /* Setting item */
+  .setting-item {
+    @apply flex items-center justify-between py-3 border-b border-border/50 last:border-0;
+  }
+
+  /* Metric card */
+  .metric-card {
+    @apply p-3 rounded-lg bg-muted/30 border border-border/30;
+  }
+
+  /* Trade action buttons */
+  .btn-buy {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all;
+    background: hsl(var(--oracle-green) / 0.15);
+    color: hsl(var(--oracle-green));
+    border: 1px solid hsl(var(--oracle-green) / 0.3);
+  }
+
+  .btn-buy:hover {
+    background: hsl(var(--oracle-green) / 0.25);
+  }
+
+  .btn-sell {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all;
+    background: hsl(var(--oracle-red) / 0.15);
+    color: hsl(var(--oracle-red));
+    border: 1px solid hsl(var(--oracle-red) / 0.3);
+  }
+
+  .btn-sell:hover {
+    background: hsl(var(--oracle-red) / 0.25);
   }
 }
 
@@ -265,38 +386,20 @@
     background-clip: text;
   }
 
-  /* Glow Text */
-  .text-glow-cyan {
-    text-shadow: 0 0 20px hsl(185 100% 60% / 0.5);
-  }
-
-  .text-glow-green {
-    text-shadow: 0 0 20px hsl(145 80% 55% / 0.5);
-  }
-
-  .text-glow-red {
-    text-shadow: 0 0 20px hsl(0 80% 60% / 0.5);
-  }
-
-  /* Animate Pulse Cyan */
-  @keyframes pulse-cyan {
+  /* Subtle animations */
+  @keyframes subtle-pulse {
     0%, 100% {
-      box-shadow: 
-        0 0 25px hsl(185 100% 60% / 0.4),
-        0 0 50px hsl(185 100% 60% / 0.2);
+      opacity: 1;
     }
     50% {
-      box-shadow: 
-        0 0 35px hsl(185 100% 60% / 0.6),
-        0 0 70px hsl(185 100% 60% / 0.3);
+      opacity: 0.85;
     }
   }
 
-  /* Fade In Up */
   @keyframes fade-in-up {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(12px);
     }
     to {
       opacity: 1;
@@ -304,62 +407,69 @@
     }
   }
 
-  .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out forwards;
-  }
-
-  /* Cinematic Darken */
-  @keyframes cinematic-darken {
+  @keyframes slide-in {
     from {
-      background: transparent;
+      opacity: 0;
+      transform: translateX(-8px);
     }
     to {
-      background: hsl(222 47% 3% / 0.9);
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 
-  /* Spawn Glow */
-  @keyframes spawn-glow {
-    0% {
+  @keyframes scale-in {
+    from {
       opacity: 0;
-      transform: scale(0.8);
-      box-shadow: 0 0 0 hsl(185 100% 60% / 0);
+      transform: scale(0.96);
     }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-      box-shadow: 0 0 60px hsl(185 100% 60% / 0.6);
-    }
-    100% {
+    to {
       opacity: 1;
       transform: scale(1);
-      box-shadow: 0 0 25px hsl(185 100% 60% / 0.4);
     }
   }
 
-  .animate-spawn {
-    animation: spawn-glow 0.8s ease-out forwards;
-  }
-
-  /* Scan Line Effect */
-  @keyframes scan-line {
+  @keyframes shimmer {
     0% {
-      transform: translateY(-100%);
+      background-position: -200% 0;
     }
     100% {
-      transform: translateY(100vh);
+      background-position: 200% 0;
     }
   }
 
-  .scan-line::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, hsl(185 100% 60% / 0.5), transparent);
-    animation: scan-line 3s linear infinite;
-    pointer-events: none;
+  .animate-fade-in {
+    animation: fade-in-up 0.4s ease-out forwards;
   }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out forwards;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background-size: 200% 100%;
+  }
+
+  /* Number styling */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stagger children */
+  .stagger-children > * {
+    animation: fade-in-up 0.4s ease-out forwards;
+    opacity: 0;
+  }
+
+  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
 }
