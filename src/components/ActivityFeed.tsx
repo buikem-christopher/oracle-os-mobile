@@ -22,7 +22,11 @@ const getTimeAgo = (date: Date) => {
   return `${Math.floor(seconds / 86400)}d ago`;
 };
 
-export const ActivityFeed: React.FC = () => {
+interface ActivityFeedProps {
+  limit?: number;
+}
+
+export const ActivityFeed: React.FC<ActivityFeedProps> = ({ limit = 10 }) => {
   const { activityFeed } = useOracle();
 
   if (activityFeed.length === 0) {
@@ -35,15 +39,8 @@ export const ActivityFeed: React.FC = () => {
   }
 
   return (
-    <div className="glass-card overflow-hidden">
-      <div className="p-3 border-b border-border/50">
-        <h3 className="text-sm font-medium flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" />
-          Live Activity
-        </h3>
-      </div>
-      <div className="max-h-48 overflow-y-auto">
-        {activityFeed.slice(0, 10).map((item) => (
+    <div className="space-y-2">
+      {activityFeed.slice(0, limit).map((item) => (
           <div
             key={item.id}
             className="px-3 py-2 border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors animate-fade-in"
@@ -58,8 +55,7 @@ export const ActivityFeed: React.FC = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
+      ))}
     </div>
   );
 };
