@@ -2,12 +2,21 @@ import React, { useState } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
 import { 
   User, FileText, Check, X, Wallet, TrendingUp, TrendingDown,
-  Award, Clock, BarChart3, Settings, Edit, Camera, Shield,
-  Star, Crown, Zap, Target, Activity
+  Award, Clock, Edit, Camera, Shield, Star, Crown, Target, 
+  Activity, GraduationCap, CreditCard, Mail, Calendar, ChevronRight, LogOut
 } from 'lucide-react';
 import { PortfolioSparkline } from '@/components/PortfolioSparkline';
+import { StudentVerification } from '@/components/StudentVerification';
+import { SubscriptionPlans } from '@/components/SubscriptionPlans';
+import oracleLogo from '@/assets/oracle-logo.jpg';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export const ProfilePage: React.FC = () => {
+interface ProfilePageProps {
+  onLogout: () => void;
+}
+
+export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
   const { 
     user, updateUser, contracts, approveContract, rejectContract, 
     portfolio, achievements, tradeHistory 
@@ -15,6 +24,10 @@ export const ProfilePage: React.FC = () => {
   
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
+  const [showPlans, setShowPlans] = useState(false);
+  const [showStudentVerification, setShowStudentVerification] = useState(false);
+  const [studentStatus, setStudentStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
+  const [currentPlan, setCurrentPlan] = useState('none');
   
   const pendingContracts = contracts.filter(c => c.status === 'pending');
   const activeContracts = contracts.filter(c => c.status === 'active');
@@ -23,6 +36,20 @@ export const ProfilePage: React.FC = () => {
   const handleSaveName = () => {
     updateUser({ name: editName });
     setIsEditing(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      onLogout();
+    } catch (error) {
+      toast.error('Failed to logout');
+    }
+  };
+
+  const handleStudentVerification = async (data: { waecNumber: string; institution: string; country: string }) => {
+    setStudentStatus('pending');
   };
 
   const getTierIcon = (tier: string) => {
@@ -39,57 +66,67 @@ export const ProfilePage: React.FC = () => {
     <div className="space-y-4 animate-fade-in pb-8">
       <header className="pt-2">
         <h1 className="text-xl font-bold">Profile</h1>
-        <p className="text-xs text-muted-foreground">Account & Capital Management</p>
+        <p className="text-xs text-muted-foreground">Account & Subscription Management</p>
       </header>
 
       {/* User Card */}
-      <div className="glass-card p-4">
-        <div className="flex items-start gap-4">
+      <div className="glass-card p-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-2xl" />
+        <div className="relative flex items-start gap-4">
           <div className="relative">
-            <div className="w-16 h-16 rounded-xl bg-gradient-oracle flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+            <div className="w-18 h-18 rounded-2xl bg-gradient-oracle flex items-center justify-center shadow-lg shadow-primary/20">
+              <img src={oracleLogo} alt="Avatar" className="w-16 h-16 rounded-xl object-cover" />
             </div>
-            <button className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center">
-              <Camera className="w-3 h-3 text-muted-foreground" />
+            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center hover:bg-primary/20 transition-colors">
+              <Camera className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </div>
           
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {isEditing ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-1">
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="bg-muted px-2 py-1 rounded text-sm font-medium w-full"
+                  className="bg-muted px-3 py-1.5 rounded-lg text-sm font-medium w-full focus:outline-none focus:ring-2 focus:ring-primary/50"
                   autoFocus
                 />
-                <button onClick={handleSaveName} className="p-1.5 rounded bg-primary text-primary-foreground">
-                  <Check className="w-3 h-3" />
+                <button onClick={handleSaveName} className="p-2 rounded-lg bg-primary text-primary-foreground">
+                  <Check className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => setIsEditing(false)} className="p-1.5 rounded bg-muted">
-                  <X className="w-3 h-3" />
+                <button onClick={() => setIsEditing(false)} className="p-2 rounded-lg bg-muted">
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{user.name}</h2>
-                <button onClick={() => setIsEditing(true)} className="p-1 rounded hover:bg-muted">
-                  <Edit className="w-3 h-3 text-muted-foreground" />
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-lg font-bold truncate">{user.name}</h2>
+                <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                  <Edit className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">{user.email}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-semibold ${
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+              <Mail className="w-3 h-3" />
+              <span className="truncate">{user.email}</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${
                 user.tier === 'enterprise' ? 'bg-oracle-gold/20 text-oracle-gold' :
                 user.tier === 'pro' ? 'bg-oracle-purple/20 text-oracle-purple' :
                 'bg-muted text-muted-foreground'
               }`}>
                 {user.tier}
               </span>
-              <span className="text-xs text-muted-foreground">
-                Member since {user.memberSince.toLocaleDateString()}
+              {studentStatus === 'approved' && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold bg-oracle-green/20 text-oracle-green">
+                  Student
+                </span>
+              )}
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Since {user.memberSince.toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -98,66 +135,108 @@ export const ProfilePage: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="glass-card p-3">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-4 h-4 text-primary" />
             <span className="text-xs text-muted-foreground">Total Trades</span>
           </div>
-          <div className="font-mono text-xl font-semibold">{user.totalTrades}</div>
+          <div className="font-mono text-2xl font-bold">{user.totalTrades}</div>
         </div>
-        <div className="glass-card p-3">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="w-4 h-4 text-oracle-green" />
             <span className="text-xs text-muted-foreground">Win Rate</span>
           </div>
-          <div className="font-mono text-xl font-semibold text-oracle-green">{user.winRate}%</div>
+          <div className="font-mono text-2xl font-bold text-oracle-green">{user.winRate}%</div>
         </div>
-        <div className="glass-card p-3">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-oracle-green" />
             <span className="text-xs text-muted-foreground">Best Trade</span>
           </div>
-          <div className="font-mono text-xl font-semibold text-oracle-green">+${user.bestTrade}</div>
+          <div className="font-mono text-xl font-bold text-oracle-green">+${user.bestTrade}</div>
         </div>
-        <div className="glass-card p-3">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-4 h-4 text-oracle-red" />
             <span className="text-xs text-muted-foreground">Worst Trade</span>
           </div>
-          <div className="font-mono text-xl font-semibold text-oracle-red">${user.worstTrade}</div>
+          <div className="font-mono text-xl font-bold text-oracle-red">${user.worstTrade}</div>
         </div>
       </div>
 
       {/* Capital Overview */}
       <div className="glass-card p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Capital</span>
+            <span className="text-sm font-medium">Capital Overview</span>
           </div>
           <PortfolioSparkline />
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <div className="metric-card text-center">
+          <div className="bg-muted/30 rounded-xl p-3 text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</div>
-            <div className="font-mono text-sm font-semibold">${portfolio.totalCapital.toFixed(0)}</div>
+            <div className="font-mono text-lg font-bold">${portfolio.totalCapital.toFixed(0)}</div>
           </div>
-          <div className="metric-card text-center">
+          <div className="bg-muted/30 rounded-xl p-3 text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Available</div>
-            <div className="font-mono text-sm font-semibold">${portfolio.availableCapital.toFixed(0)}</div>
+            <div className="font-mono text-lg font-bold">${portfolio.availableCapital.toFixed(0)}</div>
           </div>
-          <div className="metric-card text-center">
+          <div className="bg-muted/30 rounded-xl p-3 text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">P&L</div>
-            <div className={`font-mono text-sm font-semibold ${portfolio.totalPnL >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
+            <div className={`font-mono text-lg font-bold ${portfolio.totalPnL >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
               {portfolio.totalPnL >= 0 ? '+' : ''}${portfolio.totalPnL.toFixed(2)}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Student Verification */}
+      <button
+        onClick={() => setShowStudentVerification(!showStudentVerification)}
+        className="w-full glass-card p-4 flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-oracle-purple/20 flex items-center justify-center">
+            <GraduationCap className="w-5 h-5 text-oracle-purple" />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-medium">Student Verification</div>
+            <div className="text-xs text-muted-foreground">Get free access to models</div>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showStudentVerification ? 'rotate-90' : ''}`} />
+      </button>
+
+      {showStudentVerification && (
+        <StudentVerification onSubmit={handleStudentVerification} status={studentStatus} />
+      )}
+
+      {/* Subscription Plans */}
+      <button
+        onClick={() => setShowPlans(!showPlans)}
+        className="w-full glass-card p-4 flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+            <CreditCard className="w-5 h-5 text-primary" />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-medium">Subscription Plans</div>
+            <div className="text-xs text-muted-foreground">Upgrade to access RPM</div>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showPlans ? 'rotate-90' : ''}`} />
+      </button>
+
+      {showPlans && (
+        <SubscriptionPlans currentPlan={currentPlan} onSelectPlan={setCurrentPlan} />
+      )}
+
       {/* Achievements */}
       <div className="glass-card p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-oracle-gold" />
             <span className="text-sm font-medium">Achievements</span>
@@ -170,7 +249,7 @@ export const ProfilePage: React.FC = () => {
           {achievements.slice(0, 8).map((achievement) => (
             <div 
               key={achievement.id}
-              className={`p-2 rounded-lg text-center ${
+              className={`p-3 rounded-xl text-center transition-all ${
                 achievement.unlocked 
                   ? 'bg-muted/50 border border-primary/20' 
                   : 'bg-muted/20 opacity-40'
@@ -178,7 +257,7 @@ export const ProfilePage: React.FC = () => {
               title={`${achievement.name}: ${achievement.description}`}
             >
               {getTierIcon(achievement.tier)}
-              <div className="text-[9px] text-muted-foreground mt-1 truncate">{achievement.name}</div>
+              <div className="text-[9px] text-muted-foreground mt-1.5 truncate">{achievement.name}</div>
             </div>
           ))}
         </div>
@@ -195,9 +274,9 @@ export const ProfilePage: React.FC = () => {
             {pendingContracts.map(contract => (
               <div key={contract.id} className="glass-card p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-oracle-purple/10 flex items-center justify-center">
-                      <User className="w-4 h-4 text-oracle-purple" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-oracle-purple/10 flex items-center justify-center">
+                      <User className="w-5 h-5 text-oracle-purple" />
                     </div>
                     <div>
                       <span className="font-medium text-sm">{contract.investorName}</span>
@@ -211,13 +290,13 @@ export const ProfilePage: React.FC = () => {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => rejectContract(contract.id)} 
-                    className="flex-1 btn-sell flex items-center justify-center gap-1"
+                    className="flex-1 btn-sell flex items-center justify-center gap-1.5"
                   >
                     <X className="w-3.5 h-3.5" /> Reject
                   </button>
                   <button 
                     onClick={() => approveContract(contract.id)} 
-                    className="flex-1 btn-buy flex items-center justify-center gap-1"
+                    className="flex-1 btn-buy flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" /> Approve
                   </button>
@@ -237,10 +316,10 @@ export const ProfilePage: React.FC = () => {
           </h2>
           <div className="space-y-2">
             {activeContracts.map(contract => (
-              <div key={contract.id} className="glass-card p-3 flex items-center justify-between">
+              <div key={contract.id} className="glass-card p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-oracle-green/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-oracle-green" />
+                  <div className="w-10 h-10 rounded-xl bg-oracle-green/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-oracle-green" />
                   </div>
                   <div>
                     <span className="font-medium text-sm">{contract.investorName}</span>
@@ -268,19 +347,19 @@ export const ProfilePage: React.FC = () => {
               <div key={trade.id} className="p-3 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-semibold uppercase ${
-                      trade.type === 'buy' ? 'text-oracle-green' : 'text-oracle-red'
+                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      trade.type === 'buy' ? 'bg-oracle-green/20 text-oracle-green' : 'bg-oracle-red/20 text-oracle-red'
                     }`}>
                       {trade.type}
                     </span>
                     <span className="font-mono text-sm">{trade.market}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     {trade.timestamp.toLocaleTimeString()} • {trade.agentName || 'Manual'}
                   </div>
                 </div>
                 {trade.pnl !== undefined && (
-                  <span className={`font-mono text-sm ${trade.pnl >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
+                  <span className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
                     {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
                   </span>
                 )}
@@ -289,6 +368,15 @@ export const ProfilePage: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="w-full glass-card p-4 flex items-center justify-center gap-2 text-oracle-red hover:bg-oracle-red/5 transition-colors"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="font-medium">Sign Out</span>
+      </button>
     </div>
   );
 };

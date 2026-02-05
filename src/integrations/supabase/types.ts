@@ -14,7 +14,252 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          available_capital: number | null
+          avatar_url: string | null
+          best_trade: number | null
+          country: string | null
+          created_at: string | null
+          email: string
+          id: string
+          institution: string | null
+          name: string
+          student_verification_status: string | null
+          student_verified: boolean | null
+          subscription_plan: string | null
+          tier: string
+          total_capital: number | null
+          total_pnl: number | null
+          total_trades: number | null
+          updated_at: string | null
+          user_id: string
+          waec_number: string | null
+          win_rate: number | null
+          worst_trade: number | null
+        }
+        Insert: {
+          available_capital?: number | null
+          avatar_url?: string | null
+          best_trade?: number | null
+          country?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          institution?: string | null
+          name: string
+          student_verification_status?: string | null
+          student_verified?: boolean | null
+          subscription_plan?: string | null
+          tier?: string
+          total_capital?: number | null
+          total_pnl?: number | null
+          total_trades?: number | null
+          updated_at?: string | null
+          user_id: string
+          waec_number?: string | null
+          win_rate?: number | null
+          worst_trade?: number | null
+        }
+        Update: {
+          available_capital?: number | null
+          avatar_url?: string | null
+          best_trade?: number | null
+          country?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          institution?: string | null
+          name?: string
+          student_verification_status?: string | null
+          student_verified?: boolean | null
+          subscription_plan?: string | null
+          tier?: string
+          total_capital?: number | null
+          total_pnl?: number | null
+          total_trades?: number | null
+          updated_at?: string | null
+          user_id?: string
+          waec_number?: string | null
+          win_rate?: number | null
+          worst_trade?: number | null
+        }
+        Relationships: []
+      }
+      trade_history: {
+        Row: {
+          agent_id: string | null
+          agent_name: string | null
+          amount: number
+          created_at: string | null
+          id: string
+          market: string
+          pnl: number | null
+          price: number
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_name?: string | null
+          amount: number
+          created_at?: string | null
+          id?: string
+          market: string
+          pnl?: number | null
+          price: number
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          agent_name?: string | null
+          amount?: number
+          created_at?: string | null
+          id?: string
+          market?: string
+          pnl?: number | null
+          price?: number
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          alert_on_loss: number | null
+          alert_on_profit: number | null
+          api_rate_limit: number | null
+          auto_execute: boolean | null
+          compact_mode: boolean | null
+          confidence_threshold: number | null
+          confirm_trades: boolean | null
+          created_at: string | null
+          data_refresh_rate: number | null
+          debug_mode: boolean | null
+          default_model: string | null
+          default_timeframe: string | null
+          email_alerts: boolean | null
+          foresight_opacity: number | null
+          glow_intensity: number | null
+          id: string
+          kill_switch_enabled: boolean | null
+          kill_switch_threshold: number | null
+          max_agents: number | null
+          max_balance_per_agent: number | null
+          max_daily_loss: number | null
+          max_drawdown: number | null
+          push_notifications: boolean | null
+          risk_preset: string | null
+          session_timeout: number | null
+          show_pnl_in_header: boolean | null
+          sound_enabled: boolean | null
+          stop_loss_percent: number | null
+          take_profit_percent: number | null
+          theme: string | null
+          trading_mode: string | null
+          updated_at: string | null
+          user_id: string
+          volatility_tolerance: number | null
+        }
+        Insert: {
+          alert_on_loss?: number | null
+          alert_on_profit?: number | null
+          api_rate_limit?: number | null
+          auto_execute?: boolean | null
+          compact_mode?: boolean | null
+          confidence_threshold?: number | null
+          confirm_trades?: boolean | null
+          created_at?: string | null
+          data_refresh_rate?: number | null
+          debug_mode?: boolean | null
+          default_model?: string | null
+          default_timeframe?: string | null
+          email_alerts?: boolean | null
+          foresight_opacity?: number | null
+          glow_intensity?: number | null
+          id?: string
+          kill_switch_enabled?: boolean | null
+          kill_switch_threshold?: number | null
+          max_agents?: number | null
+          max_balance_per_agent?: number | null
+          max_daily_loss?: number | null
+          max_drawdown?: number | null
+          push_notifications?: boolean | null
+          risk_preset?: string | null
+          session_timeout?: number | null
+          show_pnl_in_header?: boolean | null
+          sound_enabled?: boolean | null
+          stop_loss_percent?: number | null
+          take_profit_percent?: number | null
+          theme?: string | null
+          trading_mode?: string | null
+          updated_at?: string | null
+          user_id: string
+          volatility_tolerance?: number | null
+        }
+        Update: {
+          alert_on_loss?: number | null
+          alert_on_profit?: number | null
+          api_rate_limit?: number | null
+          auto_execute?: boolean | null
+          compact_mode?: boolean | null
+          confidence_threshold?: number | null
+          confirm_trades?: boolean | null
+          created_at?: string | null
+          data_refresh_rate?: number | null
+          debug_mode?: boolean | null
+          default_model?: string | null
+          default_timeframe?: string | null
+          email_alerts?: boolean | null
+          foresight_opacity?: number | null
+          glow_intensity?: number | null
+          id?: string
+          kill_switch_enabled?: boolean | null
+          kill_switch_threshold?: number | null
+          max_agents?: number | null
+          max_balance_per_agent?: number | null
+          max_daily_loss?: number | null
+          max_drawdown?: number | null
+          push_notifications?: boolean | null
+          risk_preset?: string | null
+          session_timeout?: number | null
+          show_pnl_in_header?: boolean | null
+          sound_enabled?: boolean | null
+          stop_loss_percent?: number | null
+          take_profit_percent?: number | null
+          theme?: string | null
+          trading_mode?: string | null
+          updated_at?: string | null
+          user_id?: string
+          volatility_tolerance?: number | null
+        }
+        Relationships: []
+      }
+      watchlist: {
+        Row: {
+          created_at: string | null
+          id: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
