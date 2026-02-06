@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
 import { 
   User, FileText, Check, X, Wallet, TrendingUp, TrendingDown,
   Award, Clock, Edit, Camera, Shield, Star, Crown, Target, 
-  Activity, GraduationCap, CreditCard, Mail, Calendar, ChevronRight, LogOut
+  Activity, GraduationCap, CreditCard, Mail, Calendar, ChevronRight, LogOut, Bell, BellOff
 } from 'lucide-react';
 import { PortfolioSparkline } from '@/components/PortfolioSparkline';
-import { StudentVerification } from '@/components/StudentVerification';
+import { StudentVerificationAdvanced } from '@/components/StudentVerificationAdvanced';
 import { SubscriptionPlans } from '@/components/SubscriptionPlans';
 import oracleLogo from '@/assets/oracle-logo.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface ProfilePageProps {
   onLogout: () => void;
@@ -28,10 +29,33 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
   const [showStudentVerification, setShowStudentVerification] = useState(false);
   const [studentStatus, setStudentStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [currentPlan, setCurrentPlan] = useState('none');
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  const { permission, requestPermission, isSupported } = useNotifications();
   
   const pendingContracts = contracts.filter(c => c.status === 'pending');
   const activeContracts = contracts.filter(c => c.status === 'active');
   const unlockedAchievements = achievements.filter(a => a.unlocked);
+
+  useEffect(() => {
+    // Get current user ID
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserId(user.id);
+        // Fetch student verification status
+        supabase
+          .from('profiles')
+          .select('student_verification_status')
+          .eq('user_id', user.id)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data?.student_verification_status) {
+              setStudentStatus(data.student_verification_status as any);
+            }
+          });
+      }
+    });
+  }, []);
   
   const handleSaveName = () => {
     updateUser({ name: editName });
@@ -48,8 +72,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
     }
   };
 
-  const handleStudentVerification = async (data: { waecNumber: string; institution: string; country: string }) => {
+  const handleVerificationComplete = () => {
+    setShowStudentVerification(false);
     setStudentStatus('pending');
+    toast.success('Verification submitted!');
   };
 
   const getTierIcon = (tier: string) => {
@@ -192,25 +218,71 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         </div>
       </div>
 
+      {/* Push Notifications */}
+      {isSupported && (
+        <button
+          onClick={requestPermission}
+          className="w-full glass-card p-4 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              permission === 'granted' ? 'bg-oracle-green/20' : 'bg-muted'
+            }`}>
+              {permission === 'granted' ? (
+                <Bell className="w-5 h-5 text-oracle-green" />
+              ) : (
+                <BellOff className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-medium">Push Notifications</div>
+              <div className="text-xs text-muted-foreground">
+                {permission === 'granted' ? 'Enabled' : 'Enable alerts for trades'}
+              </div>
+            </div>
+          </div>
+          {permission === 'granted' && <Check className="w-4 h-4 text-oracle-green" />}
+        </button>
+      )}
+
       {/* Student Verification */}
       <button
-        onClick={() => setShowStudentVerification(!showStudentVerification)}
+        onClick={() => setShowStudentVerification(true)}
         className="w-full glass-card p-4 flex items-center justify-between"
+        disabled={studentStatus === 'approved' || studentStatus === 'pending'}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-oracle-purple/20 flex items-center justify-center">
-            <GraduationCap className="w-5 h-5 text-oracle-purple" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            studentStatus === 'approved' ? 'bg-oracle-green/20' : 
+            studentStatus === 'pending' ? 'bg-oracle-gold/20' : 'bg-oracle-purple/20'
+          }`}>
+            <GraduationCap className={`w-5 h-5 ${
+              studentStatus === 'approved' ? 'text-oracle-green' : 
+              studentStatus === 'pending' ? 'text-oracle-gold' : 'text-oracle-purple'
+            }`} />
           </div>
           <div className="text-left">
             <div className="text-sm font-medium">Student Verification</div>
-            <div className="text-xs text-muted-foreground">Get free access to models</div>
+            <div className="text-xs text-muted-foreground">
+              {studentStatus === 'approved' ? 'Verified ✓' : 
+               studentStatus === 'pending' ? 'Under review (24-48h)' : 
+               'Get free access to models'}
+            </div>
           </div>
         </div>
-        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showStudentVerification ? 'rotate-90' : ''}`} />
+        {studentStatus !== 'approved' && studentStatus !== 'pending' && (
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        )}
+        {studentStatus === 'approved' && <Check className="w-4 h-4 text-oracle-green" />}
       </button>
 
-      {showStudentVerification && (
-        <StudentVerification onSubmit={handleStudentVerification} status={studentStatus} />
+      {/* Advanced Student Verification Modal */}
+      {showStudentVerification && userId && studentStatus !== 'approved' && studentStatus !== 'pending' && (
+        <StudentVerificationAdvanced 
+          userId={userId}
+          onComplete={handleVerificationComplete}
+          onClose={() => setShowStudentVerification(false)}
+        />
       )}
 
       {/* Subscription Plans */}

@@ -1,55 +1,114 @@
-import React, { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, Radio } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { TrendingUp, TrendingDown, Radio, RefreshCw } from 'lucide-react';
 
 interface LivePriceCardProps {
   symbol: string;
   initialPrice: number;
+  demoMode?: boolean;
 }
 
-export const LivePriceCard: React.FC<LivePriceCardProps> = ({ symbol, initialPrice }) => {
+export const LivePriceCard: React.FC<LivePriceCardProps> = ({ symbol, initialPrice, demoMode = true }) => {
   const [price, setPrice] = useState(initialPrice);
   const [previousPrice, setPreviousPrice] = useState(initialPrice);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Simulated WebSocket connection for demo
-    // In production, connect to real exchange WebSocket
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase().replace('/', '')}@trade`);
-    
-    ws.onopen = () => {
-      setIsConnected(true);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.p) {
-          setPreviousPrice(price);
-          setPrice(parseFloat(data.p));
-        }
-      } catch (e) {
-        // Handle parse error
+    // Clean up function
+    const cleanup = () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      if (simulationIntervalRef.current) {
+        clearInterval(simulationIntervalRef.current);
+        simulationIntervalRef.current = null;
       }
     };
 
-    ws.onerror = () => {
+    if (demoMode) {
+      // Use simulated data in demo mode
       setIsConnected(false);
-      // Fallback to simulated updates
-      const interval = setInterval(() => {
-        setPreviousPrice((prev) => price);
-        setPrice((prev) => prev + (Math.random() - 0.5) * prev * 0.001);
-      }, 1000);
-      return () => clearInterval(interval);
+      simulationIntervalRef.current = setInterval(() => {
+        setPrice(prev => {
+          setPreviousPrice(prev);
+          const change = (Math.random() - 0.5) * prev * 0.001;
+          return prev + change;
+        });
+      }, 1500);
+      return cleanup;
+    }
+
+    // Real Binance WebSocket connection
+    const binanceSymbol = symbol.replace('/', '').toLowerCase();
+    const wsUrl = `wss://stream.binance.com:9443/ws/${binanceSymbol}@trade`;
+
+    const connect = () => {
+      try {
+        const ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          console.log(`WebSocket connected for ${symbol}`);
+          setIsConnected(true);
+          setConnectionError(null);
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.p) {
+              setPreviousPrice(price);
+              setPrice(parseFloat(data.p));
+            }
+          } catch (e) {
+            // Handle parse error silently
+          }
+        };
+
+        ws.onerror = (event) => {
+          console.error('WebSocket error:', event);
+          setConnectionError('Connection error');
+          setIsConnected(false);
+        };
+
+        ws.onclose = (event) => {
+          console.log('WebSocket closed:', event.code);
+          setIsConnected(false);
+          
+          // Reconnect after 5 seconds
+          if (!demoMode) {
+            reconnectTimeoutRef.current = setTimeout(() => {
+              console.log('Attempting to reconnect...');
+              connect();
+            }, 5000);
+          }
+        };
+      } catch (e) {
+        console.error('Failed to create WebSocket:', e);
+        setConnectionError('Failed to connect');
+        
+        // Fall back to simulation
+        simulationIntervalRef.current = setInterval(() => {
+          setPrice(prev => {
+            setPreviousPrice(prev);
+            const change = (Math.random() - 0.5) * prev * 0.001;
+            return prev + change;
+          });
+        }, 1500);
+      }
     };
 
-    ws.onclose = () => {
-      setIsConnected(false);
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [symbol]);
+    connect();
+    return cleanup;
+  }, [symbol, demoMode]);
 
   const isUp = price >= previousPrice;
   const changePercent = ((price - initialPrice) / initialPrice) * 100;
@@ -58,9 +117,9 @@ export const LivePriceCard: React.FC<LivePriceCardProps> = ({ symbol, initialPri
     <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Radio className={`w-3 h-3 ${isConnected ? 'text-oracle-green animate-pulse' : 'text-muted-foreground'}`} />
+          <Radio className={`w-3 h-3 ${isConnected ? 'text-oracle-green animate-pulse' : demoMode ? 'text-oracle-orange' : 'text-muted-foreground'}`} />
           <span className="text-xs text-muted-foreground">
-            {isConnected ? 'Live' : 'Simulated'}
+            {isConnected ? 'Live' : demoMode ? 'Demo' : connectionError || 'Connecting...'}
           </span>
         </div>
         <span className="font-mono text-xs text-muted-foreground">{symbol}</span>

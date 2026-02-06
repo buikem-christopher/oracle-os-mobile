@@ -60,11 +60,11 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
         </div>
       </div>
 
-      {/* Logo with glow */}
+      {/* Logo with glow - Circular */}
       <div className="relative z-10 mb-8">
         <div className="absolute inset-0 blur-2xl bg-primary/30 rounded-full animate-pulse" />
-        <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 animate-float">
-          <img src={oracleLogo} alt="Oracle OS" className="w-full h-full object-cover" />
+        <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-2xl shadow-primary/30 animate-float border-2 border-primary/30">
+          <img src={oracleLogo} alt="Oracle OS" className="w-full h-full object-cover scale-150" />
         </div>
       </div>
 

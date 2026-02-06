@@ -86,6 +86,102 @@ export type Database = {
         }
         Relationships: []
       }
+      student_verifications: {
+        Row: {
+          admission_letter_url: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          current_step: number
+          date_of_birth: string | null
+          declaration_agreed: boolean | null
+          enrollment_year: number | null
+          expected_graduation: number | null
+          full_name: string | null
+          id: string
+          institution_name: string | null
+          institution_type: string | null
+          nin_number: string | null
+          nin_slip_url: string | null
+          phone_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          state_province: string | null
+          status: string
+          student_id: string | null
+          student_id_url: string | null
+          terms_agreed: boolean | null
+          updated_at: string
+          user_id: string
+          waec_center: string | null
+          waec_exam_number: string | null
+          waec_result_url: string | null
+          waec_year: number | null
+        }
+        Insert: {
+          admission_letter_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          current_step?: number
+          date_of_birth?: string | null
+          declaration_agreed?: boolean | null
+          enrollment_year?: number | null
+          expected_graduation?: number | null
+          full_name?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          nin_number?: string | null
+          nin_slip_url?: string | null
+          phone_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          state_province?: string | null
+          status?: string
+          student_id?: string | null
+          student_id_url?: string | null
+          terms_agreed?: boolean | null
+          updated_at?: string
+          user_id: string
+          waec_center?: string | null
+          waec_exam_number?: string | null
+          waec_result_url?: string | null
+          waec_year?: number | null
+        }
+        Update: {
+          admission_letter_url?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          current_step?: number
+          date_of_birth?: string | null
+          declaration_agreed?: boolean | null
+          enrollment_year?: number | null
+          expected_graduation?: number | null
+          full_name?: string | null
+          id?: string
+          institution_name?: string | null
+          institution_type?: string | null
+          nin_number?: string | null
+          nin_slip_url?: string | null
+          phone_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          state_province?: string | null
+          status?: string
+          student_id?: string | null
+          student_id_url?: string | null
+          terms_agreed?: boolean | null
+          updated_at?: string
+          user_id?: string
+          waec_center?: string | null
+          waec_exam_number?: string | null
+          waec_result_url?: string | null
+          waec_year?: number | null
+        }
+        Relationships: []
+      }
       trade_history: {
         Row: {
           agent_id: string | null
