@@ -17,8 +17,13 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onSettingsClick, onNotif
     <header className="flex items-center justify-between py-3 animate-fade-in">
       {/* Left - Logo & Title */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-primary/20 ring-2 ring-primary/20">
-          <img src={oracleLogo} alt="Oracle OS" className="w-full h-full object-cover" />
+        {/* Circular logo with cropping to show only the icon */}
+        <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg shadow-primary/20 ring-2 ring-primary/20 flex-shrink-0">
+          <img 
+            src={oracleLogo} 
+            alt="Oracle OS" 
+            className="w-full h-full object-cover scale-150" 
+          />
         </div>
         <div>
           <div className="flex items-center gap-2">

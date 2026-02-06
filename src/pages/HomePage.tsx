@@ -16,7 +16,7 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
-  const { portfolio, agents, markets, foresight, settings, watchlist, spawnAgent, selectedMarket } = useOracle();
+  const { portfolio, agents, markets, foresight, settings, watchlist, spawnAgent, selectedMarket, demoMode } = useOracle();
   const [showAnalytics, setShowAnalytics] = useState(false);
   
   const activeAgents = agents.filter(a => a.state === 'active').length;
@@ -94,7 +94,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       </div>
 
       {/* Live Price Widget */}
-      <LivePriceCard symbol={selectedMarket} initialPrice={markets[0]?.price || 67000} />
+      <LivePriceCard 
+        symbol={selectedMarket} 
+        initialPrice={markets[0]?.price || 67000} 
+        demoMode={demoMode}
+      />
 
       {/* Oracle Foresight Card */}
       {foresight && (
