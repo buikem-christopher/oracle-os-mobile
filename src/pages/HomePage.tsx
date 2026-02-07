@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
 import { 
   Activity, Wallet, Bot, Target, BarChart3, Clock, ChevronRight,
-  Sparkles, Zap, Eye, ArrowUpRight, ArrowDownRight, Award, Radio, Plus
+  Sparkles, Zap, Eye, ArrowUpRight, ArrowDownRight, Award, Radio, Plus,
+  Send, CreditCard, ArrowDownToLine, History, TrendingUp, Shield, Flame, Globe
 } from 'lucide-react';
 import { PortfolioSparkline } from '@/components/PortfolioSparkline';
 import { HomeHeader } from '@/components/HomeHeader';
 import { MarketTicker } from '@/components/MarketTicker';
 import { LivePriceCard } from '@/components/LivePriceCard';
+import { TradingChartPro } from '@/components/TradingChartPro';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { ActivityFeed } from '@/components/ActivityFeed';
+import { FullAgenticLauncher } from '@/components/FullAgenticLauncher';
 
 interface HomePageProps {
   onSettingsClick: () => void;
@@ -18,6 +21,7 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
   const { portfolio, agents, markets, foresight, settings, watchlist, spawnAgent, selectedMarket, demoMode } = useOracle();
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showChart, setShowChart] = useState(false);
   
   const activeAgents = agents.filter(a => a.state === 'active').length;
   const topPerformer = agents.filter(a => a.state === 'active').sort((a, b) => b.pnl - a.pnl)[0];
@@ -26,7 +30,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
 
   const quickStats = [
     { label: 'Active', value: activeAgents.toString(), icon: Bot, color: 'text-primary' },
-    { label: 'Win Rate', value: `${agents.length > 0 ? (agents.reduce((sum, a) => sum + a.winRate, 0) / Math.max(agents.length, 1)).toFixed(0) : 0}%`, icon: Target, color: 'text-oracle-green' },
+    { label: 'Win Rate', value: agents.length > 0 ? `${(agents.reduce((sum, a) => sum + a.winRate, 0) / Math.max(agents.length, 1)).toFixed(0)}%` : '—', icon: Target, color: 'text-oracle-green' },
     { label: 'Trades', value: agents.reduce((sum, a) => sum + a.trades, 0).toString(), icon: Activity, color: 'text-oracle-purple' },
   ];
 
@@ -41,18 +45,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       {/* Market Ticker */}
       <MarketTicker />
 
-      {/* Main Portfolio Card */}
-      <div className="glass-card p-5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-oracle-purple/5" />
+      {/* Main Portfolio Card - Premium */}
+      <div className="card-premium p-5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-oracle-purple/8" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-oracle flex items-center justify-center shadow-lg shadow-primary/20">
-                <Wallet className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/25">
+                <Wallet className="w-7 h-7 text-white" />
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Total Portfolio Value</div>
-                <div className="font-mono text-2xl font-bold">
+                <div className="text-xs text-muted-foreground mb-0.5">Total Portfolio Value</div>
+                <div className="font-mono text-3xl font-bold">
                   ${(portfolio.totalCapital + totalPnL).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -60,24 +65,45 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
             <PortfolioSparkline />
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-muted/30 rounded-xl p-3">
+          {/* Portfolio Quick Stats */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="metric-card">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Available</div>
               <div className="font-mono text-sm font-semibold">${portfolio.availableCapital.toFixed(0)}</div>
             </div>
-            <div className="bg-muted/30 rounded-xl p-3">
+            <div className="metric-card">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Session P&L</div>
               <div className={`font-mono text-sm font-semibold flex items-center gap-1 ${isPositive ? 'text-oracle-green' : 'text-oracle-red'}`}>
                 {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {isPositive ? '+' : ''}${totalPnL.toFixed(2)}
               </div>
             </div>
-            <div className="bg-muted/30 rounded-xl p-3">
+            <div className="metric-card">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Today</div>
               <div className={`font-mono text-sm font-semibold ${portfolio.todayPnL >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
                 {portfolio.todayPnL >= 0 ? '+' : ''}{portfolio.todayPnL.toFixed(2)}%
               </div>
             </div>
+          </div>
+
+          {/* Portfolio Actions */}
+          <div className="grid grid-cols-4 gap-2">
+            <button className="btn-portfolio-action">
+              <CreditCard className="w-5 h-5 text-primary" />
+              <span className="text-[10px] font-medium">Fund</span>
+            </button>
+            <button className="btn-portfolio-action">
+              <Send className="w-5 h-5 text-oracle-purple" />
+              <span className="text-[10px] font-medium">Send</span>
+            </button>
+            <button className="btn-portfolio-action">
+              <ArrowDownToLine className="w-5 h-5 text-oracle-green" />
+              <span className="text-[10px] font-medium">Withdraw</span>
+            </button>
+            <button className="btn-portfolio-action">
+              <History className="w-5 h-5 text-muted-foreground" />
+              <span className="text-[10px] font-medium">History</span>
+            </button>
           </div>
         </div>
       </div>
@@ -85,13 +111,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-2">
         {quickStats.map((stat) => (
-          <div key={stat.label} className="glass-card p-3 text-center">
+          <div key={stat.label} className="card-elevated p-3 text-center">
             <stat.icon className={`w-4 h-4 mx-auto mb-1.5 ${stat.color}`} />
             <div className="font-mono text-lg font-bold">{stat.value}</div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</div>
           </div>
         ))}
       </div>
+
+      {/* Full Agentic Mode */}
+      <FullAgenticLauncher />
 
       {/* Live Price Widget */}
       <LivePriceCard 
@@ -100,20 +129,39 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
         demoMode={demoMode}
       />
 
+      {/* Trading Chart Toggle */}
+      <button
+        onClick={() => setShowChart(!showChart)}
+        className="w-full card-elevated p-4 flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-primary" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-medium">Pro Chart</span>
+            <p className="text-xs text-muted-foreground">TradingView-style visualization</p>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showChart ? 'rotate-90' : ''}`} />
+      </button>
+
+      {showChart && <TradingChartPro symbol={selectedMarket} />}
+
       {/* Oracle Foresight Card */}
       {foresight && (
-        <div className="glass-card p-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
+        <div className="card-premium p-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Oracle Foresight</span>
+                <span className="text-sm font-semibold">Oracle Foresight</span>
                 <span className="badge-preview">XHR</span>
               </div>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                foresight.bias === 'bullish' ? 'bg-oracle-green/10 text-oracle-green' :
-                foresight.bias === 'bearish' ? 'bg-oracle-red/10 text-oracle-red' :
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                foresight.bias === 'bullish' ? 'bg-oracle-green/15 text-oracle-green' :
+                foresight.bias === 'bearish' ? 'bg-oracle-red/15 text-oracle-red' :
                 'bg-muted text-muted-foreground'
               }`}>
                 {foresight.bias.toUpperCase()}
@@ -121,15 +169,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-muted-foreground">Confidence</div>
+                <div className="text-xs text-muted-foreground mb-1">Confidence</div>
                 <div className="flex items-center gap-2">
-                  <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="w-36 h-2.5 bg-muted rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-oracle rounded-full transition-all duration-500"
-                      style={{ width: `${foresight.confidence}%` }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${foresight.confidence}%`,
+                        background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--oracle-purple)))'
+                      }}
                     />
                   </div>
-                  <span className="font-mono text-sm font-semibold">{foresight.confidence}%</span>
+                  <span className="font-mono text-sm font-bold">{foresight.confidence}%</span>
                 </div>
               </div>
               <div className="text-right">
@@ -143,15 +194,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
 
       {/* Top Performer */}
       {topPerformer && (
-        <div className="glass-card p-4 border-l-2 border-oracle-green">
+        <div className="card-elevated p-4 border-l-4 border-oracle-green">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-oracle-green/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-oracle-green/15 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-oracle-green" />
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Top Performer</div>
-                <div className="font-mono text-sm font-medium">{topPerformer.name}</div>
+                <div className="font-mono text-sm font-semibold">{topPerformer.name}</div>
               </div>
             </div>
             <div className="text-right">
@@ -167,7 +218,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       {/* Quick Spawn */}
       <button
         onClick={() => spawnAgent(selectedMarket, settings.defaultModel)}
-        className="w-full glass-card p-4 flex items-center justify-center gap-2 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+        className="w-full card-elevated p-4 flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
       >
         <Plus className="w-4 h-4" />
         Quick Spawn Agent
@@ -176,11 +227,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       {/* Analytics Toggle */}
       <button
         onClick={() => setShowAnalytics(!showAnalytics)}
-        className="w-full glass-card p-4 flex items-center justify-between"
+        className="w-full card-elevated p-4 flex items-center justify-between"
       >
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">Analytics Dashboard</span>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-oracle-purple/15 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-oracle-purple" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-medium">Analytics Dashboard</span>
+            <p className="text-xs text-muted-foreground">Performance metrics & insights</p>
+          </div>
         </div>
         <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showAnalytics ? 'rotate-90' : ''}`} />
       </button>
@@ -188,26 +244,28 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       {showAnalytics && <AnalyticsDashboard />}
 
       {/* Market Overview */}
-      <div className="glass-card p-4">
+      <div className="card-premium p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Watchlist</span>
+            <Globe className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold">Watchlist</span>
           </div>
           <span className="text-xs text-muted-foreground">{watchlist.length} pairs</span>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {markets.filter(m => watchlist.includes(m.symbol)).slice(0, 5).map((market) => (
-            <div key={market.symbol} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+            <div key={market.symbol} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/30 border border-border/30">
               <div className="flex items-center gap-2">
                 <Radio className="w-2 h-2 text-oracle-green animate-pulse" />
-                <span className="font-mono text-sm font-medium">{market.symbol}</span>
+                <span className="font-mono text-sm font-semibold">{market.symbol}</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-mono text-sm">
                   ${market.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className={`font-mono text-xs min-w-[50px] text-right ${market.change24h >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
+                <span className={`font-mono text-xs min-w-[55px] text-right px-2 py-0.5 rounded ${
+                  market.change24h >= 0 ? 'text-oracle-green bg-oracle-green/10' : 'text-oracle-red bg-oracle-red/10'
+                }`}>
                   {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
                 </span>
               </div>
@@ -217,10 +275,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       </div>
 
       {/* Oracle Models */}
-      <div className="glass-card p-4">
+      <div className="card-premium p-4">
         <div className="flex items-center gap-2 mb-3">
           <Zap className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">Oracle Models</span>
+          <span className="text-sm font-semibold">Oracle Models</span>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -231,7 +289,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
             <div 
               key={model.name} 
               className={`p-3 rounded-xl border text-center transition-all ${
-                model.available ? 'border-border/50 bg-muted/30 hover:bg-muted/50' : 'border-border/30 bg-muted/10 opacity-60'
+                model.available ? 'border-border/50 bg-muted/30 hover:bg-muted/50 hover:border-primary/30' : 'border-border/30 bg-muted/10 opacity-60'
               }`}
             >
               <span className={model.badge}>{model.name}</span>
@@ -241,12 +299,37 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
         </div>
       </div>
 
+      {/* AI-Powered Insights */}
+      <div className="card-elevated p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Flame className="w-4 h-4 text-oracle-orange" />
+          <span className="text-sm font-semibold">AI Market Insights</span>
+          <span className="badge-soon">New</span>
+        </div>
+        <div className="space-y-2">
+          <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-3 h-3 text-oracle-green" />
+              <span className="text-xs font-medium">Bullish momentum detected</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">BTC showing strong accumulation patterns in the 4h timeframe</p>
+          </div>
+          <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+            <div className="flex items-center gap-2 mb-1">
+              <Shield className="w-3 h-3 text-primary" />
+              <span className="text-xs font-medium">Risk assessment: Moderate</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Market volatility within acceptable range for current settings</p>
+          </div>
+        </div>
+      </div>
+
       {/* Recent Activity */}
-      <div className="glass-card p-4">
+      <div className="card-premium p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Recent Activity</span>
+            <span className="text-sm font-semibold">Recent Activity</span>
           </div>
         </div>
         <ActivityFeed limit={5} />
@@ -254,14 +337,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-2">
-        <button className="glass-card p-4 flex items-center gap-3 hover:bg-muted/20 transition-colors">
+        <button className="card-elevated p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors">
           <Award className="w-5 h-5 text-oracle-gold" />
           <div className="text-left">
             <div className="text-sm font-medium">Achievements</div>
             <div className="text-xs text-muted-foreground">View progress</div>
           </div>
         </button>
-        <button className="glass-card p-4 flex items-center gap-3 hover:bg-muted/20 transition-colors">
+        <button className="card-elevated p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors">
           <Clock className="w-5 h-5 text-primary" />
           <div className="text-left">
             <div className="text-sm font-medium">History</div>
