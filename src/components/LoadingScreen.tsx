@@ -1,114 +1,153 @@
 import React, { useEffect, useState } from 'react';
-import oracleLogo from '@/assets/oracle-logo.jpg';
+import oracleLogo from '@/assets/oracle-logo-new.jpg';
 
 interface LoadingScreenProps {
   onComplete: () => void;
+  duration?: number;
 }
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
+  onComplete, 
+  duration = 2500 
+}) => {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState(0);
-
+  
   const phases = [
-    'Initializing Oracle...',
-    'Loading market data...',
-    'Connecting to intelligence layer...',
-    'Ready',
+    'Initializing Oracle Core...',
+    'Loading Market Intelligence...',
+    'Connecting Neural Networks...',
+    'Calibrating Risk Systems...',
+    'Oracle OS Ready'
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + Math.random() * 15 + 5;
-        if (next >= 100) {
-          clearInterval(interval);
-          setTimeout(onComplete, 500);
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
           return 100;
         }
-        return next;
+        return prev + 1.2;
       });
-    }, 200);
+    }, duration / 100);
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    const phaseInterval = setInterval(() => {
+      setPhase(prev => Math.min(prev + 1, phases.length - 1));
+    }, duration / phases.length);
 
-  useEffect(() => {
-    if (progress < 25) setPhase(0);
-    else if (progress < 50) setPhase(1);
-    else if (progress < 80) setPhase(2);
-    else setPhase(3);
-  }, [progress]);
+    const timeout = setTimeout(() => {
+      onComplete();
+    }, duration);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(phaseInterval);
+      clearTimeout(timeout);
+    };
+  }, [duration, onComplete, phases.length]);
 
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center">
-      {/* Animated background */}
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
+      {/* Premium background effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
-          <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-oracle-purple/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
+      </div>
+      
+      <div className="relative text-center">
+        {/* Orbital rings animation */}
+        <div className="relative w-40 h-40 mx-auto mb-8">
+          {/* Outer ring */}
           <div 
-            className="absolute inset-0 border border-primary/20 rounded-full animate-spin"
-            style={{ animationDuration: '20s' }}
+            className="absolute inset-0 rounded-full border border-primary/20"
+            style={{ animation: 'spin 12s linear infinite' }}
           />
+          
+          {/* Middle ring */}
           <div 
-            className="absolute inset-8 border border-oracle-purple/20 rounded-full animate-spin"
-            style={{ animationDuration: '15s', animationDirection: 'reverse' }}
+            className="absolute inset-4 rounded-full border border-primary/30"
+            style={{ animation: 'spin 10s linear infinite reverse' }}
           />
+          
+          {/* Inner ring with glow */}
           <div 
-            className="absolute inset-16 border border-primary/10 rounded-full animate-spin"
-            style={{ animationDuration: '25s' }}
+            className="absolute inset-8 rounded-full border-2 border-primary/50"
+            style={{ animation: 'spin 6s linear infinite' }}
           />
+
+          {/* Orbiting dots */}
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1"
+              style={{ 
+                animation: `orbit ${6 + i * 2}s linear infinite`,
+                animationDelay: `${i * 0.5}s`
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
+            </div>
+          ))}
+          
+          {/* Logo container */}
+          <div className="absolute inset-12 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-oracle-purple/20 p-[2px]">
+            <div className="w-full h-full rounded-full overflow-hidden bg-background flex items-center justify-center">
+              <img 
+                src={oracleLogo} 
+                alt="Oracle OS" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
         </div>
+
+        {/* Oracle Text with gradient */}
+        <h1 className="text-3xl font-bold mb-2">
+          <span className="text-gradient-oracle">Oracle OS</span>
+        </h1>
+        <p className="text-sm text-muted-foreground mb-8">v1.1.0</p>
+
+        {/* Progress bar */}
+        <div className="w-64 mx-auto mb-4">
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all duration-300 ease-out"
+              style={{ 
+                width: `${Math.min(progress, 100)}%`,
+                background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--oracle-purple)))'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Phase text */}
+        <p className="text-xs text-muted-foreground font-mono animate-pulse">
+          {phases[phase]}
+        </p>
+
+        {/* Progress percentage */}
+        <p className="text-xs text-primary font-mono mt-2">
+          {Math.round(Math.min(progress, 100))}%
+        </p>
       </div>
 
-      {/* Logo with glow - Circular */}
-      <div className="relative z-10 mb-8">
-        <div className="absolute inset-0 blur-2xl bg-primary/30 rounded-full animate-pulse" />
-        <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-2xl shadow-primary/30 animate-float border-2 border-primary/30">
-          <img src={oracleLogo} alt="Oracle OS" className="w-full h-full object-cover scale-150" />
-        </div>
-      </div>
-
-      {/* Title */}
-      <h1 className="relative z-10 text-3xl font-bold mb-2 bg-gradient-to-r from-primary via-oracle-purple to-primary bg-clip-text text-transparent animate-shimmer bg-[length:200%_100%]">
-        Oracle OS
-      </h1>
-      <p className="relative z-10 text-sm text-muted-foreground mb-8">
-        Trading Intelligence Platform
-      </p>
-
-      {/* Progress bar */}
-      <div className="relative z-10 w-64">
-        <div className="h-1 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-oracle rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-xs text-muted-foreground animate-pulse">
-            {phases[phase]}
-          </span>
-          <span className="font-mono text-xs text-primary">
-            {Math.round(progress)}%
-          </span>
-        </div>
-      </div>
-
-      {/* Floating particles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
-      </div>
+      {/* Add keyframes for orbit animation */}
+      <style>{`
+        @keyframes orbit {
+          from {
+            transform: rotate(0deg) translateX(60px) rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg) translateX(60px) rotate(-360deg);
+          }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

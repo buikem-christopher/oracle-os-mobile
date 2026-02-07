@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AgentState = 'spawning' | 'active' | 'paused' | 'killed' | 'expired';
 export type AgentPerformance = 'profit' | 'loss' | 'volatile' | 'foresight' | 'neutral';
@@ -108,11 +109,8 @@ export interface UserProfile {
 }
 
 export interface OracleSettings {
-  // Trading Mode
   tradingMode: TradingMode;
   defaultModel: OracleModel;
-  
-  // Risk Management
   maxAgents: number;
   maxBalancePerAgent: number;
   maxDailyLoss: number;
@@ -122,28 +120,20 @@ export interface OracleSettings {
   volatilityTolerance: number;
   stopLossPercent: number;
   takeProfitPercent: number;
-  
-  // Execution
   autoExecute: boolean;
   confirmTrades: boolean;
   killSwitchEnabled: boolean;
   killSwitchThreshold: number;
-  
-  // Display
   theme: 'dark' | 'light' | 'system';
   glowIntensity: number;
   foresightOpacity: number;
   compactMode: boolean;
   showPnlInHeader: boolean;
-  
-  // Notifications
   soundEnabled: boolean;
   pushNotifications: boolean;
   emailAlerts: boolean;
   alertOnProfit: number;
   alertOnLoss: number;
-  
-  // Advanced
   defaultTimeframe: TimeFrame;
   sessionTimeout: number;
   debugMode: boolean;
@@ -152,34 +142,23 @@ export interface OracleSettings {
 }
 
 interface OracleContextType {
-  // Connection Mode
   isLive: boolean;
   setIsLive: (value: boolean) => void;
   demoMode: boolean;
   setDemoMode: (value: boolean) => void;
-  
-  // User
   user: UserProfile;
   updateUser: (updates: Partial<UserProfile>) => void;
-  
-  // Agents
   agents: Agent[];
   spawnAgent: (market: string, model: OracleModel, strategy?: string) => void;
   killAgent: (id: string) => void;
   pauseAgent: (id: string) => void;
   resumeAgent: (id: string) => void;
-  
-  // Market Data
   markets: MarketData[];
   selectedMarket: string;
   setSelectedMarket: (symbol: string) => void;
-  
-  // XHR Foresight
   foresight: XHRForesight | null;
   showForesight: boolean;
   setShowForesight: (value: boolean) => void;
-  
-  // Portfolio
   portfolio: {
     totalCapital: number;
     availableCapital: number;
@@ -193,46 +172,32 @@ interface OracleContextType {
   depositCapital: (amount: number) => void;
   withdrawCapital: (amount: number) => void;
   portfolioHistory: { value: number; timestamp: Date }[];
-  
-  // Trade History
   tradeHistory: TradeHistory[];
-  
-  // Activity Feed
   activityFeed: ActivityItem[];
-  
-  // Alerts
   alerts: Alert[];
   markAlertRead: (id: string) => void;
   clearAlerts: () => void;
-  
-  // Achievements
   achievements: Achievement[];
-  
-  // Contracts
   contracts: InvestorContract[];
   approveContract: (id: string) => void;
   rejectContract: (id: string) => void;
-  
-  // Settings
   settings: OracleSettings;
   updateSettings: (updates: Partial<OracleSettings>) => void;
-  
-  // Full Agentic Mode
   fullAgenticMode: boolean;
   launchFullAgentic: () => void;
   stopFullAgentic: () => void;
-  
-  // Watchlist
   watchlist: string[];
   addToWatchlist: (symbol: string) => void;
   removeFromWatchlist: (symbol: string) => void;
+  loadUserProfile: () => Promise<void>;
 }
 
 const OracleContext = createContext<OracleContextType | null>(null);
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-const MARKET_PAIRS: MarketData[] = [
+// Crypto pairs
+const CRYPTO_PAIRS: MarketData[] = [
   { symbol: 'BTC/USDT', price: 67432.50, change24h: 2.34, volume: 28400000000, high24h: 68100, low24h: 65800, marketCap: 1320000000000 },
   { symbol: 'ETH/USDT', price: 3521.80, change24h: 1.87, volume: 14200000000, high24h: 3580, low24h: 3420, marketCap: 423000000000 },
   { symbol: 'SOL/USDT', price: 178.42, change24h: -0.92, volume: 3200000000, high24h: 185, low24h: 172, marketCap: 78000000000 },
@@ -242,6 +207,32 @@ const MARKET_PAIRS: MarketData[] = [
   { symbol: 'AVAX/USDT', price: 38.42, change24h: 4.12, volume: 620000000, high24h: 39.5, low24h: 36.2, marketCap: 14500000000 },
   { symbol: 'DOGE/USDT', price: 0.1234, change24h: -2.15, volume: 1200000000, high24h: 0.128, low24h: 0.118, marketCap: 17600000000 },
 ];
+
+// Forex pairs
+const FOREX_PAIRS: MarketData[] = [
+  { symbol: 'EUR/USD', price: 1.0842, change24h: 0.12, volume: 850000000000, high24h: 1.0865, low24h: 1.0820 },
+  { symbol: 'GBP/USD', price: 1.2654, change24h: -0.08, volume: 420000000000, high24h: 1.2680, low24h: 1.2630 },
+  { symbol: 'USD/JPY', price: 149.85, change24h: 0.24, volume: 580000000000, high24h: 150.10, low24h: 149.50 },
+  { symbol: 'USD/CHF', price: 0.8842, change24h: -0.15, volume: 180000000000, high24h: 0.8860, low24h: 0.8825 },
+  { symbol: 'AUD/USD', price: 0.6532, change24h: 0.32, volume: 220000000000, high24h: 0.6550, low24h: 0.6510 },
+  { symbol: 'USD/CAD', price: 1.3625, change24h: -0.18, volume: 195000000000, high24h: 1.3650, low24h: 1.3600 },
+  { symbol: 'NZD/USD', price: 0.6125, change24h: 0.08, volume: 85000000000, high24h: 0.6140, low24h: 0.6105 },
+  { symbol: 'EUR/GBP', price: 0.8568, change24h: 0.22, volume: 120000000000, high24h: 0.8585, low24h: 0.8550 },
+  { symbol: 'EUR/JPY', price: 162.45, change24h: 0.35, volume: 145000000000, high24h: 162.80, low24h: 162.10 },
+  { symbol: 'GBP/JPY', price: 189.62, change24h: 0.18, volume: 98000000000, high24h: 190.00, low24h: 189.20 },
+  { symbol: 'AUD/JPY', price: 97.85, change24h: 0.55, volume: 72000000000, high24h: 98.20, low24h: 97.50 },
+  { symbol: 'EUR/CHF', price: 0.9585, change24h: -0.05, volume: 68000000000, high24h: 0.9600, low24h: 0.9570 },
+  { symbol: 'GBP/CHF', price: 1.1195, change24h: -0.22, volume: 52000000000, high24h: 1.1220, low24h: 1.1175 },
+  { symbol: 'CAD/JPY', price: 110.02, change24h: 0.42, volume: 45000000000, high24h: 110.30, low24h: 109.75 },
+  { symbol: 'AUD/CAD', price: 0.8895, change24h: 0.28, volume: 38000000000, high24h: 0.8915, low24h: 0.8870 },
+  { symbol: 'NZD/JPY', price: 91.78, change24h: 0.32, volume: 32000000000, high24h: 92.00, low24h: 91.55 },
+  { symbol: 'EUR/AUD', price: 1.6602, change24h: -0.18, volume: 48000000000, high24h: 1.6640, low24h: 1.6575 },
+  { symbol: 'GBP/AUD', price: 1.9375, change24h: -0.38, volume: 42000000000, high24h: 1.9420, low24h: 1.9340 },
+  { symbol: 'USD/SGD', price: 1.3425, change24h: 0.08, volume: 28000000000, high24h: 1.3440, low24h: 1.3405 },
+  { symbol: 'USD/HKD', price: 7.7985, change24h: 0.02, volume: 35000000000, high24h: 7.8000, low24h: 7.7965 },
+];
+
+const MARKET_PAIRS: MarketData[] = [...CRYPTO_PAIRS, ...FOREX_PAIRS];
 
 const AGENT_NAMES = [
   'Nexus-α', 'Quantum-Σ', 'Cipher-Ω', 'Vector-Δ', 
@@ -295,13 +286,13 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedMarket, setSelectedMarket] = useState('BTC/USDT');
   const [showForesight, setShowForesight] = useState(true);
   const [fullAgenticMode, setFullAgenticMode] = useState(false);
-  const [watchlist, setWatchlist] = useState<string[]>(['BTC/USDT', 'ETH/USDT', 'SOL/USDT']);
+  const [watchlist, setWatchlist] = useState<string[]>(['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'EUR/USD', 'GBP/USD']);
   const [tradeHistory, setTradeHistory] = useState<TradeHistory[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: '1',
       type: 'system',
-      title: 'Welcome to Oracle OS',
+      title: 'Welcome to Oracle OS v1',
       message: 'Your trading intelligence platform is ready. Start by exploring the markets.',
       severity: 'info',
       timestamp: new Date(),
@@ -310,40 +301,23 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   ]);
 
   const [user, setUser] = useState<UserProfile>({
-    name: 'Trader',
-    email: 'trader@oracle.os',
-    memberSince: new Date(Date.now() - 86400000 * 90),
-    tier: 'pro',
-    totalTrades: 247,
-    winRate: 68.4,
-    bestTrade: 1250,
-    worstTrade: -380,
+    name: 'User',
+    email: 'user@example.com',
+    memberSince: new Date(),
+    tier: 'free',
+    totalTrades: 0,
+    winRate: 0,
+    bestTrade: 0,
+    worstTrade: 0,
   });
 
-  const [contracts, setContracts] = useState<InvestorContract[]>([
-    {
-      id: '1',
-      investorName: 'Alpha Capital',
-      amount: 50000,
-      profitShare: 20,
-      status: 'pending',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      investorName: 'Nexus Ventures',
-      amount: 125000,
-      profitShare: 15,
-      status: 'active',
-      createdAt: new Date(Date.now() - 86400000 * 5),
-    },
-  ]);
+  const [contracts, setContracts] = useState<InvestorContract[]>([]);
   
   const [settings, setSettings] = useState<OracleSettings>(defaultSettings);
 
   const [portfolio, setPortfolio] = useState({
     totalCapital: 1000,
-    availableCapital: 850,
+    availableCapital: 1000,
     totalPnL: 0,
     totalPnLPercent: 0,
     activeAgents: 0,
@@ -353,7 +327,7 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([
-    { id: '1', type: 'system', message: 'Oracle OS initialized', timestamp: new Date() }
+    { id: '1', type: 'system', message: 'Oracle OS v1 initialized', timestamp: new Date() }
   ]);
   
   const [achievements, setAchievements] = useState<Achievement[]>([
@@ -379,6 +353,48 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     signals: [{ type: 'buy', strength: 0.72 }],
   });
 
+  // Load user profile from Supabase
+  const loadUserProfile = useCallback(async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
+
+      if (profile) {
+        setUser({
+          name: profile.name || 'User',
+          email: profile.email || authUser.email || '',
+          avatar: profile.avatar_url || undefined,
+          memberSince: new Date(profile.created_at || Date.now()),
+          tier: (profile.tier as 'free' | 'pro' | 'enterprise') || 'free',
+          totalTrades: profile.total_trades || 0,
+          winRate: profile.win_rate || 0,
+          bestTrade: profile.best_trade || 0,
+          worstTrade: profile.worst_trade || 0,
+        });
+
+        setPortfolio(prev => ({
+          ...prev,
+          totalCapital: profile.total_capital || 1000,
+          availableCapital: profile.available_capital || 1000,
+          totalPnL: profile.total_pnl || 0,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  }, []);
+
+  // Load profile on mount
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
+
   // Apply theme
   useEffect(() => {
     const root = document.documentElement;
@@ -389,7 +405,6 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       root.classList.remove('light');
       root.classList.add('dark');
     } else {
-      // System preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
         root.classList.add('dark');
@@ -407,7 +422,8 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     const interval = setInterval(() => {
       setMarkets(prev => prev.map(m => {
-        const volatility = m.symbol.includes('BTC') ? 0.0008 : 0.0015;
+        const isForex = m.symbol.includes('/USD') && !m.symbol.includes('USDT');
+        const volatility = isForex ? 0.0002 : m.symbol.includes('BTC') ? 0.0008 : 0.0015;
         const trend = Math.random() > 0.48 ? 1 : -1;
         const change = trend * volatility * m.price * (0.5 + Math.random());
         const newPrice = Math.max(m.price * 0.95, Math.min(m.price * 1.05, m.price + change));
@@ -433,7 +449,6 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setAgents(prev => prev.map(agent => {
         if (agent.state !== 'active') return agent;
         
-        // More realistic P&L changes based on model and market
         const modelMultiplier = agent.model === 'rpm' ? 1.5 : agent.model === 'exp' ? 1.2 : 1;
         const winProbability = 0.52 + (agent.confidence / 1000);
         const isWin = Math.random() < winProbability;
@@ -450,7 +465,6 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         else if (Math.abs(newPnlPercent) > 1.5) performance = 'volatile';
         if (agent.confidence > 85) performance = 'foresight';
         
-        // Simulate trades
         const shouldTrade = Math.random() > 0.85;
         const newTrades = shouldTrade ? agent.trades + 1 : agent.trades;
         const newWinRate = shouldTrade && isWin 
@@ -470,13 +484,12 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         };
       }));
 
-      // Update portfolio based on agent performance
       const totalAgentPnl = agents.reduce((sum, a) => sum + a.pnl, 0);
       setPortfolio(prev => ({
         ...prev,
         totalPnL: totalAgentPnl,
         totalPnLPercent: (totalAgentPnl / prev.totalCapital) * 100,
-        todayPnL: prev.todayPnL + (Math.random() - 0.48) * 5,
+        todayPnL: prev.todayPnL + (Math.random() - 0.48) * 0.1,
       }));
     }, 2500);
     
@@ -629,7 +642,6 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (agent) {
       const returnedCapital = agent.capitalAllocated + agent.pnl;
       
-      // Add to trade history
       setTradeHistory(prev => [...prev, {
         id: generateId(),
         agentId: agent.id,
@@ -762,6 +774,7 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       watchlist,
       addToWatchlist,
       removeFromWatchlist,
+      loadUserProfile,
     }}>
       {children}
     </OracleContext.Provider>

@@ -11,7 +11,6 @@ export const SettingsPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSettingChange = <T,>(key: string, value: T) => {
-    // Prevent scroll reset by using requestAnimationFrame
     const scrollTop = containerRef.current?.scrollTop || 0;
     updateSettings({ [key]: value } as any);
     requestAnimationFrame(() => {
@@ -23,12 +22,12 @@ export const SettingsPage: React.FC = () => {
 
   const SettingSection: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = 
     ({ title, icon, children }) => (
-    <section className="glass-card p-4">
+    <section className="card-premium p-4">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
           {icon}
         </div>
-        <h2 className="font-medium">{title}</h2>
+        <h2 className="font-semibold">{title}</h2>
       </div>
       <div className="space-y-0">{children}</div>
     </section>
@@ -67,9 +66,9 @@ export const SettingsPage: React.FC = () => {
           step={step}
           value={value}
           onChange={(e) => handleSettingChange(settingKey, Number(e.target.value))}
-          className="w-20 accent-primary h-1.5 cursor-pointer"
+          className="w-24 accent-primary h-1.5 cursor-pointer rounded-full"
         />
-        <span className="font-mono text-xs w-12 text-right tabular-nums">{value}{unit}</span>
+        <span className="font-mono text-xs w-14 text-right tabular-nums bg-muted/50 px-2 py-1 rounded">{value}{unit}</span>
       </div>
     </SettingRow>
   );
@@ -78,14 +77,14 @@ export const SettingsPage: React.FC = () => {
     <div ref={containerRef} className="space-y-4 animate-fade-in pb-8 overflow-y-auto">
       <header className="pt-2">
         <h1 className="text-xl font-bold">Settings</h1>
-        <p className="text-xs text-muted-foreground">Configure Oracle OS</p>
+        <p className="text-xs text-muted-foreground">Configure Oracle OS v1</p>
       </header>
 
       {/* Connection Mode */}
       <SettingSection title="Connection" icon={<Wifi className="w-4 h-4 text-primary" />}>
         <SettingRow label="Live Trading" description="Connect to exchange API">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isLive ? 'bg-oracle-green/20 text-oracle-green' : 'bg-oracle-purple/20 text-oracle-purple'}`}>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${isLive ? 'bg-oracle-green/15 text-oracle-green border border-oracle-green/25' : 'bg-oracle-purple/15 text-oracle-purple border border-oracle-purple/25'}`}>
               {isLive ? 'LIVE' : 'DEMO'}
             </span>
             <Switch checked={isLive} onCheckedChange={setIsLive} />
@@ -102,7 +101,7 @@ export const SettingsPage: React.FC = () => {
           <select
             value={settings.tradingMode}
             onChange={(e) => handleSettingChange('tradingMode', e.target.value)}
-            className="bg-muted border-none rounded-lg px-3 py-1.5 text-sm font-medium cursor-pointer"
+            className="bg-muted border border-border/50 rounded-xl px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="manual">Manual</option>
             <option value="semi-agentic">Semi-Agentic</option>
@@ -113,7 +112,7 @@ export const SettingsPage: React.FC = () => {
           <select
             value={settings.defaultModel}
             onChange={(e) => handleSettingChange('defaultModel', e.target.value)}
-            className="bg-muted border-none rounded-lg px-3 py-1.5 text-sm font-medium cursor-pointer"
+            className="bg-muted border border-border/50 rounded-xl px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="preview">Preview</option>
             <option value="exp">Experimental</option>
@@ -124,7 +123,7 @@ export const SettingsPage: React.FC = () => {
           <select
             value={settings.defaultTimeframe}
             onChange={(e) => handleSettingChange('defaultTimeframe', e.target.value)}
-            className="bg-muted border-none rounded-lg px-3 py-1.5 text-sm font-medium cursor-pointer"
+            className="bg-muted border border-border/50 rounded-xl px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="1m">1 min</option>
             <option value="5m">5 min</option>
@@ -142,7 +141,7 @@ export const SettingsPage: React.FC = () => {
           <select
             value={settings.riskPreset}
             onChange={(e) => handleSettingChange('riskPreset', e.target.value)}
-            className="bg-muted border-none rounded-lg px-3 py-1.5 text-sm font-medium cursor-pointer"
+            className="bg-muted border border-border/50 rounded-xl px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="conservative">Conservative</option>
             <option value="moderate">Moderate</option>
@@ -261,25 +260,25 @@ export const SettingsPage: React.FC = () => {
       {/* Display */}
       <SettingSection title="Display" icon={<Monitor className="w-4 h-4 text-primary" />}>
         <SettingRow label="Theme" description="Light or dark mode">
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 border border-border/50">
             <button
               type="button"
               onClick={() => handleSettingChange('theme', 'light')}
-              className={`p-1.5 rounded transition-colors ${settings.theme === 'light' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+              className={`p-2 rounded-lg transition-all ${settings.theme === 'light' ? 'bg-background shadow-md' : 'hover:bg-background/50'}`}
             >
               <Sun className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => handleSettingChange('theme', 'system')}
-              className={`p-1.5 rounded transition-colors ${settings.theme === 'system' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+              className={`p-2 rounded-lg transition-all ${settings.theme === 'system' ? 'bg-background shadow-md' : 'hover:bg-background/50'}`}
             >
               <Laptop className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => handleSettingChange('theme', 'dark')}
-              className={`p-1.5 rounded transition-colors ${settings.theme === 'dark' ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+              className={`p-2 rounded-lg transition-all ${settings.theme === 'dark' ? 'bg-background shadow-md' : 'hover:bg-background/50'}`}
             >
               <Moon className="w-4 h-4" />
             </button>
@@ -400,8 +399,8 @@ export const SettingsPage: React.FC = () => {
 
       {/* Version */}
       <div className="text-center text-xs text-muted-foreground py-4">
-        <p className="font-mono">Oracle OS v2.1.0</p>
-        <p className="mt-1">© 2024 Oracle Trading Intelligence</p>
+        <p className="font-mono">Oracle OS v1.1.0</p>
+        <p className="mt-1">© 2026 Oracle Trading Intelligence</p>
       </div>
     </div>
   );

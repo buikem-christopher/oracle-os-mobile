@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
 import { 
   User, FileText, Check, X, Wallet, TrendingUp, TrendingDown,
-  Award, Clock, Edit, Camera, Shield, Star, Crown, Target, 
+  Award, Edit, Camera, Shield, Star, Crown, Target, 
   Activity, GraduationCap, CreditCard, Mail, Calendar, ChevronRight, LogOut, Bell, BellOff
 } from 'lucide-react';
 import { PortfolioSparkline } from '@/components/PortfolioSparkline';
 import { StudentVerificationAdvanced } from '@/components/StudentVerificationAdvanced';
 import { SubscriptionPlans } from '@/components/SubscriptionPlans';
-import oracleLogo from '@/assets/oracle-logo.jpg';
+import oracleLogo from '@/assets/oracle-logo-new.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -20,7 +20,7 @@ interface ProfilePageProps {
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
   const { 
     user, updateUser, contracts, approveContract, rejectContract, 
-    portfolio, achievements, tradeHistory 
+    portfolio, achievements 
   } = useOracle();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -38,28 +38,34 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
   const unlockedAchievements = achievements.filter(a => a.unlocked);
 
   useEffect(() => {
-    // Get current user ID
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        // Fetch student verification status
         supabase
           .from('profiles')
-          .select('student_verification_status')
+          .select('student_verification_status, subscription_plan, tier')
           .eq('user_id', user.id)
           .maybeSingle()
           .then(({ data }) => {
             if (data?.student_verification_status) {
               setStudentStatus(data.student_verification_status as any);
             }
+            if (data?.subscription_plan) {
+              setCurrentPlan(data.subscription_plan);
+            }
           });
       }
     });
   }, []);
   
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     updateUser({ name: editName });
     setIsEditing(false);
+    
+    // Update in database
+    if (userId) {
+      await supabase.from('profiles').update({ name: editName }).eq('user_id', userId);
+    }
   };
 
   const handleLogout = async () => {
@@ -88,6 +94,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
     }
   };
 
+  // Check if user has earned tier
+  const hasEarnedTier = user.tier !== 'free';
+
   return (
     <div className="space-y-4 animate-fade-in pb-8">
       <header className="pt-2">
@@ -95,16 +104,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         <p className="text-xs text-muted-foreground">Account & Subscription Management</p>
       </header>
 
-      {/* User Card */}
-      <div className="glass-card p-5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-2xl" />
+      {/* User Card - Premium */}
+      <div className="card-premium p-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl" />
         <div className="relative flex items-start gap-4">
           <div className="relative">
-            <div className="w-18 h-18 rounded-2xl bg-gradient-oracle flex items-center justify-center shadow-lg shadow-primary/20">
-              <img src={oracleLogo} alt="Avatar" className="w-16 h-16 rounded-xl object-cover" />
+            <div className="w-18 h-18 rounded-2xl bg-gradient-to-br from-primary/20 to-oracle-purple/20 p-[2px] shadow-xl shadow-primary/20">
+              <div className="w-16 h-16 rounded-xl overflow-hidden bg-background">
+                <img 
+                  src={user.avatar || oracleLogo} 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
             </div>
-            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center hover:bg-primary/20 transition-colors">
-              <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center hover:bg-primary/30 transition-colors">
+              <Camera className="w-3.5 h-3.5 text-primary" />
             </button>
           </div>
           
@@ -138,15 +153,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
               <span className="truncate">{user.email}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${
-                user.tier === 'enterprise' ? 'bg-oracle-gold/20 text-oracle-gold' :
-                user.tier === 'pro' ? 'bg-oracle-purple/20 text-oracle-purple' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                {user.tier}
-              </span>
+              {/* Only show tier badge if earned */}
+              {hasEarnedTier && (
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold ${
+                  user.tier === 'enterprise' ? 'bg-oracle-gold/15 text-oracle-gold border border-oracle-gold/25' :
+                  user.tier === 'pro' ? 'bg-oracle-purple/15 text-oracle-purple border border-oracle-purple/25' :
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {user.tier}
+                </span>
+              )}
               {studentStatus === 'approved' && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold bg-oracle-green/20 text-oracle-green">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold bg-oracle-green/15 text-oracle-green border border-oracle-green/25">
                   Student
                 </span>
               )}
@@ -159,40 +177,46 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Only show real data */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="glass-card p-4">
+        <div className="card-elevated p-4">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-4 h-4 text-primary" />
             <span className="text-xs text-muted-foreground">Total Trades</span>
           </div>
           <div className="font-mono text-2xl font-bold">{user.totalTrades}</div>
         </div>
-        <div className="glass-card p-4">
+        <div className="card-elevated p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="w-4 h-4 text-oracle-green" />
             <span className="text-xs text-muted-foreground">Win Rate</span>
           </div>
-          <div className="font-mono text-2xl font-bold text-oracle-green">{user.winRate}%</div>
+          <div className={`font-mono text-2xl font-bold ${user.winRate > 0 ? 'text-oracle-green' : 'text-muted-foreground'}`}>
+            {user.winRate > 0 ? `${user.winRate.toFixed(1)}%` : '—'}
+          </div>
         </div>
-        <div className="glass-card p-4">
+        <div className="card-elevated p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-oracle-green" />
             <span className="text-xs text-muted-foreground">Best Trade</span>
           </div>
-          <div className="font-mono text-xl font-bold text-oracle-green">+${user.bestTrade}</div>
+          <div className={`font-mono text-xl font-bold ${user.bestTrade > 0 ? 'text-oracle-green' : 'text-muted-foreground'}`}>
+            {user.bestTrade > 0 ? `+$${user.bestTrade}` : '—'}
+          </div>
         </div>
-        <div className="glass-card p-4">
+        <div className="card-elevated p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-4 h-4 text-oracle-red" />
             <span className="text-xs text-muted-foreground">Worst Trade</span>
           </div>
-          <div className="font-mono text-xl font-bold text-oracle-red">${user.worstTrade}</div>
+          <div className={`font-mono text-xl font-bold ${user.worstTrade < 0 ? 'text-oracle-red' : 'text-muted-foreground'}`}>
+            {user.worstTrade < 0 ? `$${user.worstTrade}` : '—'}
+          </div>
         </div>
       </div>
 
       {/* Capital Overview */}
-      <div className="glass-card p-4">
+      <div className="card-premium p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-primary" />
@@ -201,15 +225,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
           <PortfolioSparkline />
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-muted/30 rounded-xl p-3 text-center">
+          <div className="metric-card text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</div>
             <div className="font-mono text-lg font-bold">${portfolio.totalCapital.toFixed(0)}</div>
           </div>
-          <div className="bg-muted/30 rounded-xl p-3 text-center">
+          <div className="metric-card text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Available</div>
             <div className="font-mono text-lg font-bold">${portfolio.availableCapital.toFixed(0)}</div>
           </div>
-          <div className="bg-muted/30 rounded-xl p-3 text-center">
+          <div className="metric-card text-center">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">P&L</div>
             <div className={`font-mono text-lg font-bold ${portfolio.totalPnL >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
               {portfolio.totalPnL >= 0 ? '+' : ''}${portfolio.totalPnL.toFixed(2)}
@@ -222,11 +246,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
       {isSupported && (
         <button
           onClick={requestPermission}
-          className="w-full glass-card p-4 flex items-center justify-between"
+          className="w-full card-elevated p-4 flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              permission === 'granted' ? 'bg-oracle-green/20' : 'bg-muted'
+              permission === 'granted' ? 'bg-oracle-green/15' : 'bg-muted'
             }`}>
               {permission === 'granted' ? (
                 <Bell className="w-5 h-5 text-oracle-green" />
@@ -245,16 +269,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         </button>
       )}
 
-      {/* Student Verification */}
+      {/* Student Support */}
       <button
         onClick={() => setShowStudentVerification(true)}
-        className="w-full glass-card p-4 flex items-center justify-between"
+        className="w-full card-elevated p-4 flex items-center justify-between"
         disabled={studentStatus === 'approved' || studentStatus === 'pending'}
       >
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            studentStatus === 'approved' ? 'bg-oracle-green/20' : 
-            studentStatus === 'pending' ? 'bg-oracle-gold/20' : 'bg-oracle-purple/20'
+            studentStatus === 'approved' ? 'bg-oracle-green/15' : 
+            studentStatus === 'pending' ? 'bg-oracle-gold/15' : 'bg-oracle-purple/15'
           }`}>
             <GraduationCap className={`w-5 h-5 ${
               studentStatus === 'approved' ? 'text-oracle-green' : 
@@ -262,7 +286,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
             }`} />
           </div>
           <div className="text-left">
-            <div className="text-sm font-medium">Student Verification</div>
+            <div className="text-sm font-medium">Student Support</div>
             <div className="text-xs text-muted-foreground">
               {studentStatus === 'approved' ? 'Verified ✓' : 
                studentStatus === 'pending' ? 'Under review (24-48h)' : 
@@ -288,10 +312,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
       {/* Subscription Plans */}
       <button
         onClick={() => setShowPlans(!showPlans)}
-        className="w-full glass-card p-4 flex items-center justify-between"
+        className="w-full card-elevated p-4 flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
             <CreditCard className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
@@ -307,7 +331,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
       )}
 
       {/* Achievements */}
-      <div className="glass-card p-4">
+      <div className="card-premium p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-oracle-gold" />
@@ -323,7 +347,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
               key={achievement.id}
               className={`p-3 rounded-xl text-center transition-all ${
                 achievement.unlocked 
-                  ? 'bg-muted/50 border border-primary/20' 
+                  ? 'bg-muted/50 border border-primary/20 shadow-sm' 
                   : 'bg-muted/20 opacity-40'
               }`}
               title={`${achievement.name}: ${achievement.description}`}
@@ -344,10 +368,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
           </h2>
           <div className="space-y-2">
             {pendingContracts.map(contract => (
-              <div key={contract.id} className="glass-card p-4">
+              <div key={contract.id} className="card-elevated p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-oracle-purple/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-oracle-purple/15 flex items-center justify-center">
                       <User className="w-5 h-5 text-oracle-purple" />
                     </div>
                     <div>
@@ -388,9 +412,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
           </h2>
           <div className="space-y-2">
             {activeContracts.map(contract => (
-              <div key={contract.id} className="glass-card p-4 flex items-center justify-between">
+              <div key={contract.id} className="card-elevated p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-oracle-green/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-oracle-green/15 flex items-center justify-center">
                     <User className="w-5 h-5 text-oracle-green" />
                   </div>
                   <div>
@@ -407,48 +431,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         </section>
       )}
 
-      {/* Recent Trade History */}
-      {tradeHistory.length > 0 && (
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Recent Trades
-          </h2>
-          <div className="glass-card divide-y divide-border/50">
-            {tradeHistory.slice(0, 5).map(trade => (
-              <div key={trade.id} className="p-3 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                      trade.type === 'buy' ? 'bg-oracle-green/20 text-oracle-green' : 'bg-oracle-red/20 text-oracle-red'
-                    }`}>
-                      {trade.type}
-                    </span>
-                    <span className="font-mono text-sm">{trade.market}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {trade.timestamp.toLocaleTimeString()} • {trade.agentName || 'Manual'}
-                  </div>
-                </div>
-                {trade.pnl !== undefined && (
-                  <span className={`font-mono text-sm font-semibold ${trade.pnl >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
-                    {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Logout */}
+      {/* Logout Button */}
       <button
         onClick={handleLogout}
-        className="w-full glass-card p-4 flex items-center justify-center gap-2 text-oracle-red hover:bg-oracle-red/5 transition-colors"
+        className="w-full card-elevated p-4 flex items-center justify-center gap-2 text-destructive hover:bg-destructive/10 transition-colors"
       >
         <LogOut className="w-4 h-4" />
         <span className="font-medium">Sign Out</span>
       </button>
+
+      {/* Version */}
+      <div className="text-center text-xs text-muted-foreground py-4">
+        <p className="font-mono">Oracle OS v1.1.0</p>
+        <p className="mt-1">© 2026 Oracle Trading Intelligence</p>
+      </div>
     </div>
   );
 };
