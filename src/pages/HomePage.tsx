@@ -9,10 +9,8 @@ import { PortfolioSparkline } from '@/components/PortfolioSparkline';
 import { HomeHeader } from '@/components/HomeHeader';
 import { MarketTicker } from '@/components/MarketTicker';
 import { LivePriceCard } from '@/components/LivePriceCard';
-import { TradingChartPro } from '@/components/TradingChartPro';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { ActivityFeed } from '@/components/ActivityFeed';
-import { FullAgenticLauncher } from '@/components/FullAgenticLauncher';
 
 interface HomePageProps {
   onSettingsClick: () => void;
@@ -21,7 +19,6 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
   const { portfolio, agents, markets, foresight, settings, watchlist, spawnAgent, selectedMarket, demoMode } = useOracle();
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showChart, setShowChart] = useState(false);
   
   const activeAgents = agents.filter(a => a.state === 'active').length;
   const topPerformer = agents.filter(a => a.state === 'active').sort((a, b) => b.pnl - a.pnl)[0];
@@ -119,34 +116,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
         ))}
       </div>
 
-      {/* Full Agentic Mode */}
-      <FullAgenticLauncher />
-
       {/* Live Price Widget */}
       <LivePriceCard 
         symbol={selectedMarket} 
         initialPrice={markets[0]?.price || 67000} 
         demoMode={demoMode}
       />
-
-      {/* Trading Chart Toggle */}
-      <button
-        onClick={() => setShowChart(!showChart)}
-        className="w-full card-elevated p-4 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-primary" />
-          </div>
-          <div className="text-left">
-            <span className="text-sm font-medium">Pro Chart</span>
-            <p className="text-xs text-muted-foreground">TradingView-style visualization</p>
-          </div>
-        </div>
-        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showChart ? 'rotate-90' : ''}`} />
-      </button>
-
-      {showChart && <TradingChartPro symbol={selectedMarket} />}
 
       {/* Oracle Foresight Card */}
       {foresight && (

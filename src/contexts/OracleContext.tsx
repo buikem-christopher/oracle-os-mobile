@@ -416,7 +416,60 @@ export const OracleProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [settings.theme]);
 
-  // Realistic market simulation
+  // Binance WebSocket for live crypto data
+  useEffect(() => {
+    if (demoMode) return;
+    
+    const cryptoSymbols = CRYPTO_PAIRS.map(p => p.symbol.replace('/', '').toLowerCase());
+    const streams = cryptoSymbols.map(s => `${s}@ticker`).join('/');
+    const wsUrl = `wss://stream.binance.com:9443/stream?streams=${streams}`;
+    
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    
+    const connect = () => {
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onopen = () => console.log('Binance WS connected for live data');
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.stream && data.data) {
+              const t = data.data;
+              const upper = t.s.toUpperCase();
+              const symbol = upper.endsWith('USDT') ? upper.replace('USDT', '/USDT') : upper;
+              setMarkets(prev => prev.map(m => {
+                if (m.symbol !== symbol) return m;
+                return {
+                  ...m,
+                  price: parseFloat(t.c),
+                  change24h: parseFloat(t.P),
+                  high24h: parseFloat(t.h),
+                  low24h: parseFloat(t.l),
+                  volume: parseFloat(t.v),
+                };
+              }));
+            }
+          } catch (e) { /* ignore parse errors */ }
+        };
+        ws.onclose = () => {
+          reconnectTimeout = setTimeout(connect, 5000);
+        };
+        ws.onerror = () => ws?.close();
+      } catch (e) {
+        console.error('Binance WS error:', e);
+      }
+    };
+    
+    connect();
+    
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      ws?.close();
+    };
+  }, [demoMode]);
+
+  // Realistic market simulation (demo mode only)
   useEffect(() => {
     if (!demoMode) return;
     
