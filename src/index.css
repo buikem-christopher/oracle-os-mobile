@@ -218,10 +218,10 @@
   .card-premium {
     @apply glass-card;
     box-shadow: 
-      0 8px 32px -8px hsl(220 85% 55% / 0.2),
-      0 4px 16px -4px hsl(0 0% 0% / 0.3),
-      0 0 0 1px hsl(220 60% 50% / 0.08),
-      inset 0 1px 2px hsl(0 0% 100% / 0.08);
+      0 4px 16px -4px hsl(220 85% 55% / 0.1),
+      0 2px 8px -2px hsl(0 0% 0% / 0.2),
+      0 0 0 1px hsl(220 60% 50% / 0.06),
+      inset 0 1px 1px hsl(0 0% 100% / 0.06);
   }
 
   .light .card-premium {
@@ -236,10 +236,10 @@
   .card-elevated {
     @apply glass-card;
     box-shadow: 
-      0 12px 40px -12px hsl(220 85% 55% / 0.25),
-      0 6px 20px -6px hsl(0 0% 0% / 0.35),
-      0 0 0 1px hsl(220 60% 50% / 0.1),
-      inset 0 2px 3px hsl(0 0% 100% / 0.1);
+      0 4px 16px -6px hsl(220 85% 55% / 0.1),
+      0 2px 8px -2px hsl(0 0% 0% / 0.2),
+      0 0 0 1px hsl(220 60% 50% / 0.07),
+      inset 0 1px 1px hsl(0 0% 100% / 0.06);
     transform: translateZ(0);
   }
 
@@ -251,38 +251,25 @@
       inset 0 2px 3px hsl(0 0% 100% / 0.95);
   }
 
-  /* Agent Glow States - More dramatic */
+  /* Agent Glow States - Subtle */
   .agent-glow-profit {
-    box-shadow: 
-      0 0 0 1px hsl(var(--oracle-green) / 0.4),
-      0 0 24px hsl(var(--oracle-green-glow) / 0.2),
-      0 8px 32px -8px hsl(var(--oracle-green) / 0.3);
-    border-color: hsl(var(--oracle-green) / 0.5);
+    box-shadow: 0 0 0 1px hsl(var(--oracle-green) / 0.3);
+    border-color: hsl(var(--oracle-green) / 0.4);
   }
 
   .agent-glow-loss {
-    box-shadow: 
-      0 0 0 1px hsl(var(--oracle-red) / 0.4),
-      0 0 24px hsl(var(--oracle-red-glow) / 0.2),
-      0 8px 32px -8px hsl(var(--oracle-red) / 0.3);
-    border-color: hsl(var(--oracle-red) / 0.5);
+    box-shadow: 0 0 0 1px hsl(var(--oracle-red) / 0.3);
+    border-color: hsl(var(--oracle-red) / 0.4);
   }
 
   .agent-glow-volatile {
-    box-shadow: 
-      0 0 0 1px hsl(var(--oracle-orange) / 0.4),
-      0 0 24px hsl(var(--oracle-orange-glow) / 0.18),
-      0 8px 32px -8px hsl(var(--oracle-orange) / 0.25);
-    border-color: hsl(var(--oracle-orange) / 0.5);
+    box-shadow: 0 0 0 1px hsl(var(--oracle-orange) / 0.3);
+    border-color: hsl(var(--oracle-orange) / 0.4);
   }
 
   .agent-glow-foresight {
-    box-shadow: 
-      0 0 0 1px hsl(var(--oracle-blue) / 0.5),
-      0 0 30px hsl(var(--oracle-blue-glow) / 0.25),
-      0 12px 40px -12px hsl(var(--oracle-blue) / 0.4);
-    border-color: hsl(var(--oracle-blue) / 0.6);
-    animation: oracle-pulse 3s ease-in-out infinite;
+    box-shadow: 0 0 0 1px hsl(var(--oracle-blue) / 0.4);
+    border-color: hsl(var(--oracle-blue) / 0.5);
   }
 
   .agent-glow-killed {

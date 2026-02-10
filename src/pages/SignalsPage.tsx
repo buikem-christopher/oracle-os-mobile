@@ -1,25 +1,98 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
 import { 
   TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, MinusCircle,
-  Activity, Eye, BarChart2, Zap, Globe, Radio, Flame
+  Activity, Eye, BarChart2, Zap, Globe, Radio, Flame, ChevronDown
 } from 'lucide-react';
+import { PortfolioSparkline } from '@/components/PortfolioSparkline';
+
+type MarketTab = 'overview' | 'forex' | 'crypto';
+
+// Mini sparkline component for signal cards
+const MiniSparkline: React.FC<{ positive: boolean }> = ({ positive }) => {
+  const points = useMemo(() => {
+    const pts: number[] = [];
+    let val = 50;
+    for (let i = 0; i < 20; i++) {
+      val += (Math.random() - (positive ? 0.4 : 0.6)) * 8;
+      val = Math.max(10, Math.min(90, val));
+      pts.push(val);
+    }
+    return pts;
+  }, [positive]);
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${i * (100 / 19)} ${100 - p}`).join(' ');
+  const areaD = pathD + ` L 100 100 L 0 100 Z`;
+  const color = positive ? 'hsl(var(--oracle-green))' : 'hsl(var(--oracle-red))';
+  const gradId = positive ? 'sparkGreen' : 'sparkRed';
+
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-12" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gradId})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+};
 
 export const SignalsPage: React.FC = () => {
   const { markets, foresight, demoMode } = useOracle();
+  const [activeTab, setActiveTab] = useState<MarketTab>('overview');
 
-  // Separate crypto and forex
   const cryptoMarkets = markets.filter(m => m.symbol.includes('USDT'));
   const forexMarkets = markets.filter(m => !m.symbol.includes('USDT'));
 
-  // Generate signals for display
   const generateSignal = (market: { symbol: string; change24h: number; price: number }) => {
     const momentum = market.change24h;
-    if (momentum > 1.5) return { type: 'strong-buy', label: 'Strong Buy', color: 'text-oracle-green', bg: 'bg-oracle-green/15' };
-    if (momentum > 0.5) return { type: 'buy', label: 'Buy', color: 'text-oracle-green', bg: 'bg-oracle-green/10' };
-    if (momentum < -1.5) return { type: 'strong-sell', label: 'Strong Sell', color: 'text-oracle-red', bg: 'bg-oracle-red/15' };
-    if (momentum < -0.5) return { type: 'sell', label: 'Sell', color: 'text-oracle-red', bg: 'bg-oracle-red/10' };
-    return { type: 'hold', label: 'Hold', color: 'text-muted-foreground', bg: 'bg-muted' };
+    if (momentum > 1.5) return { label: 'Strong Buy', color: 'text-oracle-green', bg: 'bg-oracle-green/15', dotColor: 'bg-oracle-green' };
+    if (momentum > 0.5) return { label: 'Buy', color: 'text-oracle-green', bg: 'bg-oracle-green/10', dotColor: 'bg-oracle-green' };
+    if (momentum < -1.5) return { label: 'Strong Sell', color: 'text-oracle-red', bg: 'bg-oracle-red/15', dotColor: 'bg-oracle-red' };
+    if (momentum < -0.5) return { label: 'Sell', color: 'text-oracle-red', bg: 'bg-oracle-red/10', dotColor: 'bg-oracle-red' };
+    return { label: 'Hold', color: 'text-muted-foreground', bg: 'bg-muted', dotColor: 'bg-muted-foreground' };
+  };
+
+  const topMovers = useMemo(() => 
+    [...markets].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 6),
+  [markets]);
+
+  const tabs: { key: MarketTab; label: string }[] = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'forex', label: 'Forex' },
+    { key: 'crypto', label: 'Crypto' },
+  ];
+
+  const renderMarketCard = (market: typeof markets[0]) => {
+    const signal = generateSignal(market);
+    const isPositive = market.change24h >= 0;
+    return (
+      <div key={market.symbol} className="card-elevated p-4 flex flex-col justify-between min-h-[140px]">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Radio className={`w-2 h-2 ${demoMode ? 'text-oracle-orange' : 'text-oracle-green animate-pulse'}`} />
+            <span className="font-mono text-sm font-bold">{market.symbol}</span>
+          </div>
+          <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${signal.bg} ${signal.color}`}>
+            {signal.label}
+          </span>
+        </div>
+        <div className="flex-1 my-1">
+          <MiniSparkline positive={isPositive} />
+        </div>
+        <div className="flex items-end justify-between">
+          <span className="font-mono text-base font-bold">
+            {market.price < 10 ? market.price.toFixed(4) : `$${market.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+          </span>
+          <span className={`font-mono text-xs font-semibold ${isPositive ? 'text-oracle-green' : 'text-oracle-red'}`}>
+            {isPositive ? '+' : ''}{market.change24h.toFixed(2)}%
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -29,7 +102,24 @@ export const SignalsPage: React.FC = () => {
         <p className="text-xs text-muted-foreground">Oracle Market Intelligence & Trade Signals</p>
       </header>
 
-      {/* Main Signal Card */}
+      {/* Tab bar */}
+      <div className="flex gap-2">
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              activeTab === tab.key 
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Master Signal */}
       <div className="card-premium p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -42,32 +132,29 @@ export const SignalsPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-5">
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
             foresight?.bias === 'bullish' ? 'bg-oracle-green/15 border border-oracle-green/25' : 
             foresight?.bias === 'bearish' ? 'bg-oracle-red/15 border border-oracle-red/25' : 'bg-muted border border-border'
           }`}>
-            {foresight?.bias === 'bullish' ? <ArrowUpCircle className="w-10 h-10 text-oracle-green" /> :
-             foresight?.bias === 'bearish' ? <ArrowDownCircle className="w-10 h-10 text-oracle-red" /> :
-             <MinusCircle className="w-10 h-10 text-muted-foreground" />}
+            {foresight?.bias === 'bullish' ? <ArrowUpCircle className="w-8 h-8 text-oracle-green" /> :
+             foresight?.bias === 'bearish' ? <ArrowDownCircle className="w-8 h-8 text-oracle-red" /> :
+             <MinusCircle className="w-8 h-8 text-muted-foreground" />}
           </div>
           <div className="flex-1">
-            <p className="text-3xl font-bold capitalize mb-1">{foresight?.bias || 'Neutral'}</p>
+            <p className="text-2xl font-bold capitalize mb-1">{foresight?.bias || 'Neutral'}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground">Confidence: <span className="text-primary font-mono font-semibold">{foresight?.confidence}%</span></span>
               <span className="text-muted-foreground">Horizon: <span className="font-mono">{foresight?.horizon}</span></span>
             </div>
           </div>
         </div>
-        
-        {/* Signal strength bar */}
         <div className="mt-4 pt-4 border-t border-border/30">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground">Signal Strength</span>
             <span className="text-xs font-mono text-primary">{foresight?.signals[0]?.strength ? `${(foresight.signals[0].strength * 100).toFixed(0)}%` : '—'}</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
-              className={`h-full rounded-full transition-all duration-500 ${
+            <div className={`h-full rounded-full transition-all duration-500 ${
                 foresight?.bias === 'bullish' ? 'bg-oracle-green' : 
                 foresight?.bias === 'bearish' ? 'bg-oracle-red' : 'bg-muted-foreground'
               }`}
@@ -82,12 +169,12 @@ export const SignalsPage: React.FC = () => {
         <div className="card-elevated p-3 text-center">
           <Flame className="w-4 h-4 mx-auto mb-1.5 text-oracle-orange" />
           <div className="font-mono text-lg font-bold">{cryptoMarkets.filter(m => m.change24h > 0).length}</div>
-          <div className="text-[10px] text-muted-foreground uppercase">Bullish Crypto</div>
+          <div className="text-[10px] text-muted-foreground uppercase">Bullish</div>
         </div>
         <div className="card-elevated p-3 text-center">
           <Globe className="w-4 h-4 mx-auto mb-1.5 text-primary" />
           <div className="font-mono text-lg font-bold">{forexMarkets.length}</div>
-          <div className="text-[10px] text-muted-foreground uppercase">Forex Pairs</div>
+          <div className="text-[10px] text-muted-foreground uppercase">Forex</div>
         </div>
         <div className="card-elevated p-3 text-center">
           <Zap className="w-4 h-4 mx-auto mb-1.5 text-oracle-gold" />
@@ -96,113 +183,53 @@ export const SignalsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Top Movers */}
-      <div className="card-premium p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-oracle-green" />
-            <span className="text-sm font-medium">Top Movers</span>
+      {/* Overview: Top Movers Grid */}
+      {activeTab === 'overview' && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-oracle-green" />
+              <h2 className="text-sm font-medium">Top Movers</h2>
+            </div>
+            <span className="text-xs text-muted-foreground">24h</span>
           </div>
-          <span className="text-xs text-muted-foreground">24h</span>
-        </div>
-        <div className="space-y-2">
-          {[...markets].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5).map((market) => {
-            const signal = generateSignal(market);
-            return (
-              <div key={market.symbol} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg ${signal.bg} flex items-center justify-center`}>
-                    {market.change24h >= 0 ? 
-                      <TrendingUp className={`w-4 h-4 ${signal.color}`} /> : 
-                      <TrendingDown className={`w-4 h-4 ${signal.color}`} />
-                    }
-                  </div>
-                  <div>
-                    <p className="font-mono text-sm font-semibold">{market.symbol}</p>
-                    <p className="text-xs text-muted-foreground">${market.price.toLocaleString(undefined, { maximumFractionDigits: market.price < 1 ? 4 : 2 })}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className={`font-mono text-sm font-semibold ${market.change24h >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
-                    {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-                  </span>
-                  <p className={`text-[10px] font-semibold ${signal.color}`}>{signal.label}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+          <div className="grid grid-cols-2 gap-2">
+            {topMovers.map(renderMarketCard)}
+          </div>
+        </>
+      )}
 
-      {/* Forex Section */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-medium">Forex Markets</h2>
+      {/* Forex Tab */}
+      {activeTab === 'forex' && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-medium">Forex Markets</h2>
+            </div>
+            <span className="text-xs text-muted-foreground">{forexMarkets.length} pairs</span>
           </div>
-          <span className="text-xs text-muted-foreground">{forexMarkets.length} pairs</span>
-        </div>
-        <div className="space-y-1.5">
-          {forexMarkets.map(market => {
-            const signal = generateSignal(market);
-            return (
-              <div key={market.symbol} className="card-elevated p-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Radio className={`w-2 h-2 ${demoMode ? 'text-oracle-orange' : 'text-oracle-green animate-pulse'}`} />
-                  <div>
-                    <p className="font-mono text-sm font-semibold">{market.symbol}</p>
-                    <p className="font-mono text-xs text-muted-foreground">{market.price.toFixed(4)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`font-mono text-sm ${market.change24h >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
-                    {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-                  </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${signal.bg} ${signal.color}`}>
-                    {signal.label}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 gap-2">
+            {forexMarkets.map(renderMarketCard)}
+          </div>
+        </>
+      )}
 
-      {/* Crypto Section */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-oracle-gold" />
-            <h2 className="text-sm font-medium">Crypto Markets</h2>
+      {/* Crypto Tab */}
+      {activeTab === 'crypto' && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-oracle-gold" />
+              <h2 className="text-sm font-medium">Crypto Markets</h2>
+            </div>
+            <span className="text-xs text-muted-foreground">{cryptoMarkets.length} pairs</span>
           </div>
-          <span className="text-xs text-muted-foreground">{cryptoMarkets.length} pairs</span>
-        </div>
-        <div className="space-y-1.5">
-          {cryptoMarkets.map(market => {
-            const signal = generateSignal(market);
-            return (
-              <div key={market.symbol} className="card-elevated p-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Radio className={`w-2 h-2 ${demoMode ? 'text-oracle-orange' : 'text-oracle-green animate-pulse'}`} />
-                  <div>
-                    <p className="font-mono text-sm font-semibold">{market.symbol}</p>
-                    <p className="font-mono text-xs text-muted-foreground">${market.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`font-mono text-sm ${market.change24h >= 0 ? 'text-oracle-green' : 'text-oracle-red'}`}>
-                    {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-                  </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${signal.bg} ${signal.color}`}>
-                    {signal.label}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 gap-2">
+            {cryptoMarkets.map(renderMarketCard)}
+          </div>
+        </>
+      )}
 
       {/* Signal Legend */}
       <div className="card-elevated p-4">
