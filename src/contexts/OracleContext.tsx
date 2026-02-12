@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type AgentState = 'spawning' | 'active' | 'paused' | 'killed' | 'expired';
+export type AgentState = 'spawning' | 'idle' | 'scanning' | 'evaluating' | 'waiting' | 'active' | 'executing' | 'blocked' | 'paused' | 'killed' | 'expired';
 export type AgentPerformance = 'profit' | 'loss' | 'volatile' | 'foresight' | 'neutral';
 export type OracleModel = 'preview' | 'exp' | 'rpm';
 export type TradingMode = 'manual' | 'semi-agentic' | 'full-agentic';
@@ -235,9 +235,9 @@ const FOREX_PAIRS: MarketData[] = [
 const MARKET_PAIRS: MarketData[] = [...CRYPTO_PAIRS, ...FOREX_PAIRS];
 
 const AGENT_NAMES = [
-  'Nexus-α', 'Quantum-Σ', 'Cipher-Ω', 'Vector-Δ', 
-  'Pulse-Ψ', 'Helix-Φ', 'Nova-Θ', 'Apex-Λ',
-  'Titan-Ξ', 'Prism-Γ', 'Echo-Π', 'Flux-Υ'
+  'Agent 1 (Alpha)', 'Agent 2 (Beta)', 'Agent 3 (Gamma)', 'Agent 4 (Delta)', 
+  'Agent 5 (Epsilon)', 'Agent 6 (Zeta)', 'Agent 7 (Eta)', 'Agent 8 (Theta)',
+  'Agent 9 (Iota)', 'Agent 10 (Kappa)', 'Agent 11 (Lambda)', 'Agent 12 (Mu)'
 ];
 
 const STRATEGIES = [

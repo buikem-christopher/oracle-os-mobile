@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Rocket, Zap, Shield, AlertTriangle, X, Bot, TrendingUp } from 'lucide-react';
 import { useOracle } from '@/contexts/OracleContext';
+import { CinematicLaunch } from './CinematicLaunch';
 
 export const FullAgenticLauncher: React.FC = () => {
   const { fullAgenticMode, launchFullAgentic, stopFullAgentic, settings, agents } = useOracle();
@@ -105,81 +106,12 @@ export const FullAgenticLauncher: React.FC = () => {
         </div>
       </button>
 
-      {/* Launch Overlay - Fixed height to prevent layout shift */}
-      {launching && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in">
-          <div className="absolute inset-0 bg-background/98 backdrop-blur-md" />
-          
-          <div className="relative z-10 text-center max-w-md w-full px-6">
-            {/* Animated container with fixed dimensions */}
-            <div className="relative w-48 h-48 mx-auto mb-8">
-              {/* Outer pulse rings */}
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="absolute inset-0 rounded-full border-2 border-primary/30"
-                  style={{ 
-                    animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-                    animationDelay: `${i * 0.4}s`
-                  }}
-                />
-              ))}
-              
-              {/* Rotating ring */}
-              <div className="absolute inset-4 rounded-full border-2 border-dashed border-primary/40 animate-spin-slow" />
-              
-              {/* Progress ring */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="80"
-                  fill="none"
-                  stroke="hsl(var(--muted))"
-                  strokeWidth="4"
-                />
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="80"
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="4"
-                  strokeDasharray={2 * Math.PI * 80}
-                  strokeDashoffset={2 * Math.PI * 80 * (1 - launchProgress / 100)}
-                  strokeLinecap="round"
-                  className="transition-all duration-100"
-                />
-              </svg>
-              
-              {/* Center content */}
-              <div className="absolute inset-16 rounded-full bg-gradient-to-br from-primary/20 to-oracle-purple/20 flex items-center justify-center">
-                <Rocket className="w-12 h-12 text-primary" />
-              </div>
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2">
-              <span className="text-gradient-oracle">Initializing Full Agentic Mode</span>
-            </h2>
-            
-            <p className="text-muted-foreground mb-6">
-              Deploying {settings.maxAgents} autonomous agents...
-            </p>
-
-            {/* Progress bar */}
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-100"
-                style={{ 
-                  width: `${launchProgress}%`,
-                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--oracle-purple)))'
-                }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-3 font-mono">{launchProgress}%</p>
-          </div>
-        </div>
-      )}
+      {/* Cinematic Launch Sequence */}
+      <CinematicLaunch 
+        isLaunching={launching} 
+        progress={launchProgress} 
+        maxAgents={settings.maxAgents} 
+      />
 
       {/* Confirmation Modal - Fixed position */}
       {showConfirm && (
