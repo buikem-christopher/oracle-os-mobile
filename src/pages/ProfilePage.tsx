@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PortfolioSparkline } from '@/components/PortfolioSparkline';
 import { StudentVerificationAdvanced } from '@/components/StudentVerificationAdvanced';
+import { InvestorContractManager } from '@/components/InvestorContractManager';
 import { SubscriptionPlans } from '@/components/SubscriptionPlans';
 import oracleLogo from '@/assets/oracle-logo-new.jpg';
 import { supabase } from '@/integrations/supabase/client';
@@ -325,6 +326,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onLogout }) => {
         </div>
         <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showPlans ? 'rotate-90' : ''}`} />
       </button>
+
+      {/* Investor Contract Manager */}
+      <div className="card-premium p-4">
+        <InvestorContractManager />
+      </div>
 
       {showPlans && (
         <SubscriptionPlans currentPlan={currentPlan} onSelectPlan={setCurrentPlan} />

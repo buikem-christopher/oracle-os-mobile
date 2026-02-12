@@ -11,8 +11,9 @@ interface AgentCardProps {
 
 const getGlowClass = (performance: Agent['performance'], state: Agent['state']) => {
   if (state === 'killed') return 'agent-glow-killed';
-  if (state === 'paused') return 'opacity-70';
-  if (state === 'spawning') return 'agent-glow-foresight';
+  if (state === 'paused' || state === 'idle') return 'opacity-70';
+  if (state === 'spawning' || state === 'scanning') return 'agent-glow-foresight';
+  if (state === 'blocked') return 'agent-glow-volatile';
   
   switch (performance) {
     case 'profit': return 'agent-glow-profit';
@@ -45,9 +46,11 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <CircleDot className={`w-3 h-3 ${
-              agent.state === 'active' ? 'text-oracle-green' :
-              agent.state === 'paused' ? 'text-oracle-orange' :
-              agent.state === 'killed' ? 'text-oracle-red' :
+              agent.state === 'active' || agent.state === 'executing' ? 'text-oracle-green' :
+              agent.state === 'paused' || agent.state === 'idle' ? 'text-oracle-orange' :
+              agent.state === 'killed' || agent.state === 'expired' ? 'text-oracle-red' :
+              agent.state === 'blocked' ? 'text-oracle-gold' :
+              agent.state === 'scanning' || agent.state === 'evaluating' ? 'text-oracle-cyan' :
               'text-primary animate-pulse'
             }`} />
             <span className="font-mono text-sm font-medium text-foreground">

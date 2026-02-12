@@ -8,7 +8,7 @@ import { Eye, EyeOff, Plus, Bot, Activity, Zap } from 'lucide-react';
 
 export const EnvironmentsPage: React.FC = () => {
   const { selectedMarket, showForesight, setShowForesight, agents, spawnAgent, settings, portfolio } = useOracle();
-  const activeAgents = agents.filter(a => a.state !== 'killed');
+  const activeAgents = agents.filter(a => a.state !== 'killed' && a.state !== 'expired');
   const canSpawn = activeAgents.length < settings.maxAgents && portfolio.availableCapital > 10;
 
   return (

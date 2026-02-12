@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      investor_contracts: {
+        Row: {
+          activated_at: string | null
+          amount: number
+          capital_limit: number | null
+          contract_type: string
+          created_at: string
+          duration_days: number | null
+          expires_at: string | null
+          id: string
+          investor_email: string | null
+          investor_name: string
+          performance_pnl: number | null
+          performance_trades: number | null
+          profit_share: number
+          risk_constraint_max_daily_loss: number | null
+          risk_constraint_max_drawdown: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          amount?: number
+          capital_limit?: number | null
+          contract_type?: string
+          created_at?: string
+          duration_days?: number | null
+          expires_at?: string | null
+          id?: string
+          investor_email?: string | null
+          investor_name: string
+          performance_pnl?: number | null
+          performance_trades?: number | null
+          profit_share?: number
+          risk_constraint_max_daily_loss?: number | null
+          risk_constraint_max_drawdown?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          amount?: number
+          capital_limit?: number | null
+          contract_type?: string
+          created_at?: string
+          duration_days?: number | null
+          expires_at?: string | null
+          id?: string
+          investor_email?: string | null
+          investor_name?: string
+          performance_pnl?: number | null
+          performance_trades?: number | null
+          profit_share?: number
+          risk_constraint_max_daily_loss?: number | null
+          risk_constraint_max_drawdown?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           available_capital: number | null
