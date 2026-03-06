@@ -44,6 +44,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
       <MarketTicker />
 
       {/* Main Portfolio Card - Premium */}
+      <Motion3DCard intensity={0.4}>
       <div className="card-premium p-5 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-oracle-purple/8" />
         <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
