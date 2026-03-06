@@ -3,6 +3,8 @@ import { TradingChart } from '@/components/TradingChart';
 import { MarketSelector } from '@/components/MarketSelector';
 import { FullAgenticLauncher } from '@/components/FullAgenticLauncher';
 import { AgentCard } from '@/components/AgentCard';
+import { RSLGauge } from '@/components/RSLGauge';
+import { Motion3DCard } from '@/components/Motion3DCard';
 import { useOracle } from '@/contexts/OracleContext';
 import { Eye, EyeOff, Plus, Bot, Activity, Zap } from 'lucide-react';
 
@@ -33,6 +35,11 @@ export const EnvironmentsPage: React.FC = () => {
       <MarketSelector />
       <TradingChart symbol={selectedMarket} showForesight={showForesight} />
       
+      {/* RSL Risk Gauge */}
+      <Motion3DCard intensity={0.5}>
+        <RSLGauge />
+      </Motion3DCard>
+
       {/* Trading Mode Indicator */}
       <div className="glass-card p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -68,7 +75,9 @@ export const EnvironmentsPage: React.FC = () => {
           </div>
           <div className="grid gap-2">
             {activeAgents.map(agent => (
-              <AgentCard key={agent.id} agent={agent} />
+              <Motion3DCard key={agent.id} intensity={0.6}>
+                <AgentCard agent={agent} />
+              </Motion3DCard>
             ))}
           </div>
         </section>
