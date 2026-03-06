@@ -168,6 +168,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
             </div>
           </div>
         </div>
+        </Motion3DCard>
       )}
 
       {/* Top Performer */}
