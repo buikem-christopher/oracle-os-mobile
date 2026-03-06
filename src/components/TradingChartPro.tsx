@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { useOracle } from '@/contexts/OracleContext';
-import { TrendingUp, TrendingDown, Eye, Activity, BarChart2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Activity, BarChart2, EyeOff } from 'lucide-react';
 
 interface CandleData {
   time: string;
@@ -52,12 +52,12 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
   const basePrice = market?.price || 67000;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(600);
+  const [xhrVisible, setXhrVisible] = useState(true);
   
   const [candles, setCandles] = useState<CandleData[]>(() => generateHistoricalCandles(basePrice, 50));
   const [hoveredCandle, setHoveredCandle] = useState<CandleData | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Measure container
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -91,13 +91,15 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
     return () => clearInterval(interval);
   }, [demoMode]);
 
+  const showXHR = showForesight && xhrVisible;
+
   const chartData = useMemo(() => {
     const data = [...candles];
-    if (showForesight && foresight && foresight.confidence > 60) {
+    if (showXHR && foresight && foresight.confidence > 60) {
       const lastPrice = data[data.length - 1]?.close || basePrice;
       let price = lastPrice;
       const now = Date.now();
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         const bias = foresight.bias === 'bullish' ? 0.65 : foresight.bias === 'bearish' ? 0.35 : 0.5;
         const trend = Math.random() < bias ? 1 : -1;
         const intensity = (foresight.confidence / 100) * 0.006;
@@ -111,9 +113,10 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
       }
     }
     return data;
-  }, [candles, showForesight, foresight, basePrice]);
+  }, [candles, showXHR, foresight, basePrice]);
 
-  const currentPrice = chartData[chartData.length - (showForesight && foresight ? 5 : 1)]?.close || basePrice;
+  const realCandles = chartData.filter(c => !c.isXHR);
+  const currentPrice = realCandles[realCandles.length - 1]?.close || basePrice;
   const openPrice = chartData[0]?.open || currentPrice;
   const priceChange = currentPrice - openPrice;
   const priceChangePercent = (priceChange / openPrice) * 100;
@@ -153,7 +156,6 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   }, []);
 
-  // Price labels on y-axis
   const priceLabels = useMemo(() => {
     const labels = [];
     const steps = 5;
@@ -163,6 +165,19 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
     }
     return labels;
   }, [paddedMin, paddedRange, chartHeight]);
+
+  // XHR confidence gradient zone
+  const xhrZone = useMemo(() => {
+    if (!showXHR || !foresight) return null;
+    const xhrCandles = chartData.filter(c => c.isXHR);
+    if (xhrCandles.length === 0) return null;
+    
+    const firstXhrIdx = chartData.findIndex(c => c.isXHR);
+    const startX = leftPad + firstXhrIdx * (candleWidth + candleGap);
+    const endX = leftPad + (chartData.length - 1) * (candleWidth + candleGap) + candleWidth;
+    
+    return { startX, endX, confidence: foresight.confidence };
+  }, [showXHR, foresight, chartData, leftPad, candleWidth, candleGap]);
 
   return (
     <div className="card-premium p-4">
@@ -190,24 +205,31 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
           </div>
         </div>
         
-        {showForesight && foresight && (
-          <div className="text-right">
-            <div className="flex items-center gap-2 justify-end mb-1.5">
-              <Eye className="w-4 h-4 text-primary" />
-              <span className="badge-preview">XHR Foresight</span>
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${
-                foresight.bias === 'bullish' ? 'bg-oracle-green/15 text-oracle-green' :
-                foresight.bias === 'bearish' ? 'bg-oracle-red/15 text-oracle-red' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                {foresight.bias.toUpperCase()}
-              </span>
-              <span className="font-mono text-sm text-primary font-semibold">{foresight.confidence}%</span>
-            </div>
-          </div>
-        )}
+        <div className="text-right">
+          {showForesight && foresight && (
+            <>
+              <div className="flex items-center gap-2 justify-end mb-1.5">
+                <button 
+                  onClick={() => setXhrVisible(!xhrVisible)}
+                  className={`p-1 rounded transition-colors ${xhrVisible ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  {xhrVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
+                <span className="badge-preview">XHR</span>
+              </div>
+              <div className="flex items-center gap-2 justify-end">
+                <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${
+                  foresight.bias === 'bullish' ? 'bg-oracle-green/15 text-oracle-green' :
+                  foresight.bias === 'bearish' ? 'bg-oracle-red/15 text-oracle-red' :
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {foresight.bias.toUpperCase()}
+                </span>
+                <span className="font-mono text-sm text-primary font-semibold">{foresight.confidence}%</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Chart Area */}
@@ -219,6 +241,36 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
           onMouseLeave={() => setHoveredCandle(null)}
           style={{ cursor: 'crosshair' }}
         >
+          <defs>
+            {/* XHR confidence gradient */}
+            <linearGradient id="xhrConfGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.12} />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+            </linearGradient>
+            {/* Regime transition indicator */}
+            <linearGradient id="regimeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={foresight?.bias === 'bullish' ? 'hsl(var(--oracle-green))' : foresight?.bias === 'bearish' ? 'hsl(var(--oracle-red))' : 'hsl(var(--muted-foreground))'} stopOpacity={0.08} />
+              <stop offset="100%" stopColor="transparent" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+
+          {/* XHR projection zone background */}
+          {xhrZone && (
+            <>
+              <rect x={xhrZone.startX - 2} y={0} width={xhrZone.endX - xhrZone.startX + 4} height={chartHeight}
+                fill="url(#xhrConfGrad)" />
+              <rect x={xhrZone.startX - 2} y={0} width={xhrZone.endX - xhrZone.startX + 4} height={chartHeight}
+                fill="url(#regimeGrad)" />
+              {/* Projection boundary line */}
+              <line x1={xhrZone.startX - 2} y1={0} x2={xhrZone.startX - 2} y2={chartHeight}
+                stroke="hsl(var(--primary))" strokeOpacity={0.2} strokeDasharray="4 4" strokeWidth={1} />
+              {/* Projection label */}
+              <text x={xhrZone.startX + 4} y={14} fontSize="8" fontFamily="var(--font-mono)" fill="hsl(var(--primary))" opacity={0.6}>
+                PROJECTION
+              </text>
+            </>
+          )}
+
           {/* Horizontal grid lines */}
           {priceLabels.map((label, i) => (
             <line key={i} x1={leftPad} y1={label.y} x2={chartWidth - rightPad} y2={label.y}
@@ -250,22 +302,27 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
             const wickTop = priceToY(candle.high);
             const wickBottom = priceToY(candle.low);
             const color = isGreen ? 'hsl(var(--oracle-green))' : 'hsl(var(--oracle-red))';
-            const opacity = candle.isXHR ? settings.foresightOpacity / 100 : 1;
+            
+            // XHR candles fade based on distance from real data
+            const xhrCandles = chartData.filter(c => c.isXHR);
+            const xhrIndex = candle.isXHR ? xhrCandles.indexOf(candle) : -1;
+            const opacity = candle.isXHR 
+              ? Math.max(0.15, (settings.foresightOpacity / 100) * (1 - xhrIndex * 0.15))
+              : 1;
 
             return (
               <g key={i} opacity={opacity}
                 onMouseEnter={() => setHoveredCandle(candle)}
               >
-                {/* Wick */}
                 <line x1={x + candleWidth / 2} y1={wickTop} x2={x + candleWidth / 2} y2={wickBottom}
                   stroke={color} strokeWidth={0.8} />
-                {/* Body */}
                 <rect x={x} y={bodyTop} width={candleWidth} height={bodyHeight}
                   fill={isGreen ? color : 'transparent'} stroke={color} strokeWidth={0.8} rx={0.5} />
-                {/* XHR marker */}
                 {candle.isXHR && (
-                  <rect x={x - 1} y={bodyTop - 1} width={candleWidth + 2} height={bodyHeight + 2}
-                    fill="none" stroke="hsl(var(--primary))" strokeWidth={1.5} rx={1} opacity={0.35} />
+                  <>
+                    <rect x={x - 1} y={bodyTop - 1} width={candleWidth + 2} height={bodyHeight + 2}
+                      fill="none" stroke="hsl(var(--primary))" strokeWidth={1} rx={1} opacity={0.3} strokeDasharray="2 2" />
+                  </>
                 )}
               </g>
             );
@@ -313,6 +370,17 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
                 stroke="hsl(var(--muted-foreground))" strokeOpacity={0.3} strokeDasharray="2 2" />
               <line x1={leftPad} y1={mousePos.y} x2={chartWidth - rightPad} y2={mousePos.y}
                 stroke="hsl(var(--muted-foreground))" strokeOpacity={0.3} strokeDasharray="2 2" />
+              {/* Crosshair price label */}
+              {mousePos.y > 0 && mousePos.y < chartHeight && (
+                <g>
+                  <rect x={chartWidth - rightPad + 2} y={mousePos.y - 8} width={rightPad - 4} height={16}
+                    fill="hsl(var(--muted))" rx={2} stroke="hsl(var(--border))" strokeWidth={0.5} />
+                  <text x={chartWidth - rightPad + 6} y={mousePos.y + 3}
+                    fontSize="8" fontFamily="var(--font-mono)" fill="hsl(var(--foreground))">
+                    {(paddedMax - (mousePos.y / chartHeight) * paddedRange).toFixed(2)}
+                  </text>
+                </g>
+              )}
             </>
           )}
 
@@ -354,9 +422,14 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
               )}
             </div>
             {hoveredCandle.isXHR && (
-              <div className="mt-2 pt-2 border-t border-border text-[10px] text-primary flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                Oracle Foresight Projection
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-[10px] text-primary flex items-center gap-1 mb-1">
+                  <Eye className="w-3 h-3" />
+                  Oracle Projection
+                </div>
+                <div className="text-[9px] text-muted-foreground">
+                  Confidence: {foresight?.confidence}% • Non-tradable
+                </div>
               </div>
             )}
           </div>
@@ -378,8 +451,8 @@ export const TradingChartPro: React.FC<TradingChartProProps> = ({ symbol, showFo
         </div>
         {showForesight && foresight && (
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
-            <span className="text-xs text-muted-foreground">XHR Active</span>
+            <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${xhrVisible ? 'bg-primary animate-pulse shadow-primary/50' : 'bg-muted-foreground'}`} />
+            <span className="text-xs text-muted-foreground">{xhrVisible ? 'XHR Active' : 'XHR Off'}</span>
           </div>
         )}
       </div>
