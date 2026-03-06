@@ -5,11 +5,10 @@ interface Motion3DCardProps {
   children: React.ReactNode;
   className?: string;
   intensity?: number;
-  glowColor?: string;
 }
 
 export const Motion3DCard: React.FC<Motion3DCardProps> = ({ 
-  children, className = '', intensity = 1, glowColor 
+  children, className = '', intensity = 1
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
