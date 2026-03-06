@@ -11,6 +11,11 @@ import { MarketTicker } from '@/components/MarketTicker';
 import { LivePriceCard } from '@/components/LivePriceCard';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { ActivityFeed } from '@/components/ActivityFeed';
+import { Motion3DCard } from '@/components/Motion3DCard';
+import { MarketTicker } from '@/components/MarketTicker';
+import { LivePriceCard } from '@/components/LivePriceCard';
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { ActivityFeed } from '@/components/ActivityFeed';
 
 interface HomePageProps {
   onSettingsClick: () => void;
