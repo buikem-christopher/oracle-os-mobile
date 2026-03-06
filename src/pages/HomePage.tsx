@@ -106,6 +106,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
           </div>
         </div>
       </div>
+      </Motion3DCard>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-2">
