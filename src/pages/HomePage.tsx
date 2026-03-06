@@ -128,8 +128,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onSettingsClick }) => {
 
       {/* Oracle Foresight Card */}
       {foresight && (
+        <Motion3DCard intensity={0.5}>
         <div className="card-premium p-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
