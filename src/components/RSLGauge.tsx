@@ -24,11 +24,8 @@ export const RSLGauge: React.FC = () => {
 
   // Arc parameters for 90° gauge
   const cx = 100, cy = 100, r = 70;
-  const startAngle = Math.PI; // left (180°)
-  const endAngle = Math.PI / 2 * 3; // bottom-right (270°) — actually let's do 180° to 360° = left to right = half circle
-  // Let's do a 180° arc (semicircle from left to right through top)
   const arcStart = Math.PI;
-  const arcEnd = 0; // 0 radians = right side
+  const arcEnd = 0;
   const needleAngle = arcStart - (riskScore / 100) * Math.PI;
 
   const arcPath = (startA: number, endA: number, radius: number) => {

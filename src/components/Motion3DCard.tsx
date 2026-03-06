@@ -36,7 +36,7 @@ export const Motion3DCard: React.FC<Motion3DCardProps> = ({
       onMouseLeave={handleMouseLeave}
       animate={{ rotateX, rotateY }}
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.5 }}
-      style={{ transformStyle: 'preserve-3d', perspective: 800, willChange: 'transform' }}
+      style={{ transformStyle: 'preserve-3d', willChange: 'transform' } as React.CSSProperties}
       className={className}
     >
       {children}
